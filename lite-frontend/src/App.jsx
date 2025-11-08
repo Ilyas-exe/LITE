@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
 import JobTrackerPage from './pages/JobTrackerPage';
+import TaskManagerPage from './pages/TaskManagerPage';
 import './App.css';
 
 function App() {
@@ -38,6 +39,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <JobTrackerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/task-manager"
+            element={
+              <ProtectedRoute>
+                <TaskManagerPage />
               </ProtectedRoute>
             }
           />
