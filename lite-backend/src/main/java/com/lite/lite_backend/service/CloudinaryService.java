@@ -46,7 +46,9 @@ public class CloudinaryService {
                 file.getBytes(),
                 ObjectUtils.asMap(
                         "folder", "lite-app/cvs", // Organize files in a folder
-                        "resource_type", "auto" // Auto-detect file type
+                        "resource_type", "auto", // Auto-detect file type
+                        "type", "upload", // Make it publicly accessible
+                        "access_mode", "public" // Public access mode
                 ));
 
         // Return the secure URL of the uploaded file
