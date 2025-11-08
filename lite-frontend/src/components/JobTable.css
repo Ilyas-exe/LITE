@@ -113,7 +113,8 @@
 .btn-edit,
 .btn-delete,
 .btn-save,
-.btn-cancel {
+.btn-cancel,
+.btn-upload {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;
@@ -165,6 +166,22 @@
   background: #666;
   color: white;
   transform: translateY(-2px);
+}
+
+.btn-upload {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.btn-upload:hover:not(:disabled) {
+  background: #7b1fa2;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-upload:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .edit-input,
