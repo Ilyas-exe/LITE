@@ -231,6 +231,13 @@ function JobTable({ jobs, onRefresh }) {
                                     </td>
                                     <td>
                                         <div className="action-buttons">
+                                            <button
+                                                onClick={() => handleFileSelect(job.id)}
+                                                className="btn-upload"
+                                                disabled={uploadingId === job.id}
+                                            >
+                                                {uploadingId === job.id ? '⏳ Uploading...' : '📤 Upload CV'}
+                                            </button>
                                             <button onClick={() => handleEdit(job)} className="btn-edit">
                                                 ✏️ Edit
                                             </button>
