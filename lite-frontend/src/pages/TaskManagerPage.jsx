@@ -1,6 +1,8 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import KanbanBoard from '../components/KanbanBoard';
+import AddTaskModal from '../components/AddTaskModal';
 import './TaskManagerPage.css';
 
 function TaskManagerPage() {
@@ -97,89 +99,23 @@ function TaskManagerPage() {
                     )}
 
                     {!loading && !error && (
-                        <div className="kanban-board">
-                            <div className="kanban-column">
-                                <div className="column-header todo-header">
-                                    <h3>📋 To Do</h3>
-                                    <span className="task-count">{todoTasks.length}</span>
-                                </div>
-                                <div className="column-content">
-                                    {todoTasks.length === 0 ? (
-                                        <p className="empty-column">No tasks</p>
-                                    ) : (
-                                        todoTasks.map(task => (
-                                            <div key={task.id} className="task-card">
-                                                <h4>{task.title}</h4>
-                                                {task.description && (
-                                                    <p className="task-description">{task.description}</p>
-                                                )}
-                                                {task.dueDate && (
-                                                    <p className="task-due-date">
-                                                        📅 {new Date(task.dueDate).toLocaleDateString()}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
+                        <>
+                            <KanbanBoard
+                                tasks={tasks}
+                                onTaskUpdate={fetchTasks}
+                                onTaskDelete={fetchTasks}
+                            />
 
-                            <div className="kanban-column">
-                                <div className="column-header in-progress-header">
-                                    <h3>⚡ In Progress</h3>
-                                    <span className="task-count">{inProgressTasks.length}</span>
-                                </div>
-                                <div className="column-content">
-                                    {inProgressTasks.length === 0 ? (
-                                        <p className="empty-column">No tasks</p>
-                                    ) : (
-                                        inProgressTasks.map(task => (
-                                            <div key={task.id} className="task-card">
-                                                <h4>{task.title}</h4>
-                                                {task.description && (
-                                                    <p className="task-description">{task.description}</p>
-                                                )}
-                                                {task.dueDate && (
-                                                    <p className="task-due-date">
-                                                        📅 {new Date(task.dueDate).toLocaleDateString()}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="kanban-column">
-                                <div className="column-header done-header">
-                                    <h3>✅ Done</h3>
-                                    <span className="task-count">{doneTasks.length}</span>
-                                </div>
-                                <div className="column-content">
-                                    {doneTasks.length === 0 ? (
-                                        <p className="empty-column">No tasks</p>
-                                    ) : (
-                                        doneTasks.map(task => (
-                                            <div key={task.id} className="task-card">
-                                                <h4>{task.title}</h4>
-                                                {task.description && (
-                                                    <p className="task-description">{task.description}</p>
-                                                )}
-                                                {task.dueDate && (
-                                                    <p className="task-due-date">
-                                                        📅 {new Date(task.dueDate).toLocaleDateString()}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                            <AddTaskModal
+                                isOpen={showAddModal}
+                                onClose={() => setShowAddModal(false)}
+                                onTaskAdded={fetchTasks}
+                            />
+                        </>
                     )}
-                </div>
-            </main>
-        </div>
+                </div >
+            </main >
+        </div >
     );
 }
 
