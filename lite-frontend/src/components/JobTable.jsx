@@ -4,6 +4,7 @@ import './JobTable.css';
 function JobTable({ jobs, onRefresh }) {
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({});
+    const [uploadingId, setUploadingId] = useState(null);
 
     const handleEdit = (job) => {
         setEditingId(job.id);
@@ -66,6 +67,59 @@ function JobTable({ jobs, onRefresh }) {
             console.error('Error deleting job:', error);
             alert('Failed to delete job application');
         }
+    };
+
+    const handleUploadCV = async (id, file) => {
+        if (!file) {
+            alert('Please select a file');
+            return;
+        }
+
+        // Check file size (10MB max)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10MB');
+            return;
+        }
+
+        setUploadingId(id);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch(`http://localhost:8080/api/jobs/${id}/upload-cv`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to upload CV');
+            }
+
+            alert('CV uploaded successfully! ✅');
+            onRefresh(); // Refresh the list
+        } catch (error) {
+            console.error('Error uploading CV:', error);
+            alert('Failed to upload CV');
+        } finally {
+            setUploadingId(null);
+        }
+    };
+
+    const handleFileSelect = (id) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf,.doc,.docx';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleUploadCV(id, file);
+            }
+        };
+        input.click();
     };
 
     if (jobs.length === 0) {
