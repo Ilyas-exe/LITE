@@ -1,0 +1,60 @@
+### Test if server is running
+GET http://localhost:8080/api/auth/test
+
+###
+
+### Register a new user
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ilyas Test",
+  "email": "ilyas@test.com",
+  "password": "password123"
+}
+
+###
+
+### Login with the registered user
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ilyas@test.com",
+  "password": "password123"
+}
+
+###
+
+### Register another user
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securepassword"
+}
+
+###
+
+### Login with wrong password (should fail)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ilyas@test.com",
+  "password": "wrongpassword"
+}
+
+###
+
+### Try to register with duplicate email (should fail)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Another User",
+  "email": "ilyas@test.com",
+  "password": "password123"
+}
