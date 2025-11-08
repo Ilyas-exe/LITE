@@ -38,10 +38,10 @@ const Dashboard = () => {
                             <button className="feature-btn">Open →</button>
                         </div>
 
-                        <div className="feature-card">
+                        <div className="feature-card" onClick={() => navigate('/task-manager')} style={{ cursor: 'pointer' }}>
                             <h3>📝 Task Manager</h3>
                             <p>Organize your tasks with a Trello-like board</p>
-                            <span className="coming-soon">Coming Soon</span>
+                            <button className="feature-btn">Open →</button>
                         </div>
 
                         <div className="feature-card">
