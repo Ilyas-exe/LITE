@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
+import JobTrackerPage from './pages/JobTrackerPage';
 import './App.css';
 
 function App() {
@@ -21,6 +22,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/job-tracker"
+            element={
+              <ProtectedRoute>
+                <JobTrackerPage />
               </ProtectedRoute>
             }
           />
