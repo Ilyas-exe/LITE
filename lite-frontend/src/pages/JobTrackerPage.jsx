@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import JobTable from '../components/JobTable';
+import AddJobForm from '../components/AddJobForm';
 import './JobTrackerPage.css';
 
 function JobTrackerPage() {
@@ -90,6 +91,8 @@ function JobTrackerPage() {
 
                     {!loading && !error && (
                         <div className="job-tracker-content">
+                            <AddJobForm onJobAdded={fetchJobs} />
+
                             <div className="jobs-count">
                                 <p>You have <strong>{jobs.length}</strong> job application{jobs.length !== 1 ? 's' : ''}</p>
                             </div>
