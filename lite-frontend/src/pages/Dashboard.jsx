@@ -32,10 +32,10 @@ const Dashboard = () => {
                     <p>Your personal career and productivity dashboard</p>
 
                     <div className="features-grid">
-                        <div className="feature-card">
+                        <div className="feature-card" onClick={() => navigate('/job-tracker')} style={{ cursor: 'pointer' }}>
                             <h3>📋 Job Tracker</h3>
                             <p>Track your job applications and manage your career search</p>
-                            <span className="coming-soon">Coming Soon</span>
+                            <button className="feature-btn">Open →</button>
                         </div>
 
                         <div className="feature-card">
