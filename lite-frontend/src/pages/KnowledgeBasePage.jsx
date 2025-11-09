@@ -42,6 +42,49 @@ function KnowledgeBasePage() {
         }
     };
 
+    // Extract all notes from tree structure for wiki linking
+    const getAllNotes = (treeData) => {
+        const notes = [];
+
+        const extractNotes = (folder) => {
+            if (folder.notes) {
+                notes.push(...folder.notes);
+            }
+            if (folder.subFolders) {
+                folder.subFolders.forEach(extractNotes);
+            }
+        };
+
+        // Root notes
+        if (treeData.notes) {
+            notes.push(...treeData.notes);
+        }
+
+        // Notes in subfolders
+        if (treeData.subFolders) {
+            treeData.subFolders.forEach(extractNotes);
+        }
+
+        return notes;
+    };
+
+    // Navigate to a note by ID (for wiki links and backlinks)
+    const handleNavigateToNote = (noteId) => {
+        const allNotes = getAllNotes(tree);
+        const note = allNotes.find(n => n.id === noteId);
+
+        if (note) {
+            setSelectedItem(note);
+            setSelectedType('note');
+
+            // If in grid mode, close modal and switch to sidebar
+            if (viewMode === 'grid') {
+                setViewMode('sidebar');
+                setShowViewModal(false);
+            }
+        }
+    };
+
     const handleSearch = (query) => {
         setSearchQuery(query);
         if (!query.trim()) {
@@ -254,6 +297,8 @@ function KnowledgeBasePage() {
                                 item={selectedItem}
                                 type={selectedType}
                                 onRefresh={fetchTree}
+                                allNotes={getAllNotes(tree)}
+                                onNavigateToNote={handleNavigateToNote}
                             />
                         </main>
                     </div>
@@ -458,6 +503,8 @@ function KnowledgeBasePage() {
                                         if (currentFolder) fetchFolderContents(currentFolder.id);
                                         else fetchTree();
                                     }}
+                                    allNotes={getAllNotes(tree)}
+                                    onNavigateToNote={handleNavigateToNote}
                                 />
                             </div>
                         </div>
