@@ -30,8 +30,8 @@ function KnowledgeBasePage() {
         }
     };
 
-    const handleItemClick = (item, type) => {
-        setSelectedItem(item);
+    const handleItemClick = (item, type, folderPath = []) => {
+        setSelectedItem({ ...item, folderPath });
         setSelectedType(type);
     };
 
