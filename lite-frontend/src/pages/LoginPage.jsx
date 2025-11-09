@@ -1,7 +1,6 @@
 import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import './AuthPages.css';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -20,7 +19,7 @@ const LoginPage = () => {
         const result = await login(email, password);
 
         if (result.success) {
-            navigate('/'); // Redirect to dashboard
+            navigate('/');
         } else {
             setError(result.error);
         }
@@ -29,48 +28,82 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <h1>Welcome Back</h1>
-                <p className="auth-subtitle">Login to your LITE account</p>
+        <div className="min-h-screen flex items-center justify-center p-6 animate-fade-in">
+            {/* Login Container */}
+            <div className="w-full max-w-md">
+                {/* Header */}
+                <div className="mb-12 animate-slide-up">
+                    <h1 className="text-2xl font-medium text-white mb-2 font-mono">
+                        Welcome Back
+                    </h1>
+                    <p className="text-sm text-dark-muted font-mono">
+                        Login to your LITE account
+                    </p>
+                </div>
 
-                <form onSubmit={handleSubmit} className="auth-form">
-                    {error && <div className="error-message">{error}</div>}
+                {/* Login Form */}
+                <form onSubmit={handleSubmit} className="space-y-5 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                    {error && (
+                        <div className="bg-red-500/5 border border-red-500/20 text-red-400 px-4 py-3 rounded-md text-sm font-mono">
+                            {error}
+                        </div>
+                    )}
 
-                    <div className="form-group">
-                        <label htmlFor="email">Email</label>
+                    <div className="space-y-2">
+                        <label htmlFor="email" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Email Address
+                        </label>
                         <input
                             type="email"
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            placeholder="Enter your email"
+                            placeholder="you@example.com"
                             disabled={loading}
+                            className="input-field"
+                            autoComplete="email"
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
+                    <div className="space-y-2">
+                        <label htmlFor="password" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Password
+                        </label>
                         <input
                             type="password"
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            placeholder="Enter your password"
+                            placeholder="••••••••"
                             disabled={loading}
+                            className="input-field"
+                            autoComplete="current-password"
                         />
                     </div>
 
-                    <button type="submit" className="btn-primary" disabled={loading}>
-                        {loading ? 'Logging in...' : 'Login'}
+                    <button
+                        type="submit"
+                        className="btn-primary w-full mt-8"
+                        disabled={loading}
+                    >
+                        {loading ? 'Authenticating...' : 'Login'}
                     </button>
                 </form>
 
-                <p className="auth-footer">
-                    Don't have an account? <Link to="/register">Register here</Link>
-                </p>
+                {/* Footer */}
+                <div className="mt-8 text-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                    <p className="text-sm text-dark-muted font-mono">
+                        Don't have an account?{' '}
+                        <Link
+                            to="/register"
+                            className="text-accent-blue hover:underline transition-all font-medium font-mono"
+                        >
+                            Create account
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     );
