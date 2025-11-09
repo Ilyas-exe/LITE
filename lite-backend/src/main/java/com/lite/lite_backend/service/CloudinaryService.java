@@ -41,18 +41,44 @@ public class CloudinaryService {
             throw new IllegalArgumentException("File is empty");
         }
 
-        // Upload to Cloudinary
+        // Get original filename
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isEmpty()) {
+            originalFilename = "document";
+        }
+
+        // Determine folder based on file type
+        String folder = "lite-app/documents";
+        if (originalFilename.endsWith(".pdf") ||
+                originalFilename.endsWith(".doc") ||
+                originalFilename.endsWith(".docx")) {
+            folder = "lite-app/cvs";
+        }
+
+        // Clean the filename - remove extension for public_id
+        String cleanFilename = originalFilename.substring(0, originalFilename.lastIndexOf('.'))
+                .replaceAll("[^a-zA-Z0-9._-]", "_");
+
+        // Upload to Cloudinary with proper configuration
         Map<String, Object> uploadResult = cloudinary.uploader().upload(
                 file.getBytes(),
                 ObjectUtils.asMap(
-                        "folder", "lite-app/cvs", // Organize files in a folder
-                        "resource_type", "auto", // Auto-detect file type
-                        "type", "upload", // Make it publicly accessible
-                        "access_mode", "public" // Public access mode
+                        "folder", folder,
+                        "resource_type", "raw", // Use 'raw' for PDFs and documents
+                        "public_id", cleanFilename, // Just the filename without folder (folder param handles that)
+                        "use_filename", true,
+                        "unique_filename", false, // Keep original name
+                        "overwrite", true, // Allow overwriting
+                        "invalidate", true // Invalidate CDN cache
                 ));
 
         // Return the secure URL of the uploaded file
-        return (String) uploadResult.get("secure_url");
+        String secureUrl = (String) uploadResult.get("secure_url");
+
+        // Log for debugging
+        System.out.println("File uploaded successfully to Cloudinary: " + secureUrl);
+
+        return secureUrl;
     }
 
     /**
