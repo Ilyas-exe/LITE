@@ -22,14 +22,20 @@ public class JobApplication {
     @Column(nullable = false)
     private String company;
 
-    @Column(nullable = false)
-    private String role;
+    @Column(nullable = true)
+    private String wayOfApplying; // e.g., "indeed", "gmail", "linkedin", "company website"
+
+    @Column(nullable = true)
+    private String contact; // Contact email or link
 
     @Column(nullable = false)
-    private String status; // e.g., "Applied", "Interviewing", "Offer", "Rejected"
+    private String status; // e.g., "Submitted", "In Progress", "Rejected", "Awaiting Response"
 
     @Column(nullable = false)
     private LocalDate dateApplied;
+
+    @Column(length = 1000, nullable = true)
+    private String jobDescription; // Job description or notes
 
     @Column(length = 500)
     private String cvUrl; // URL of uploaded CV (nullable)
