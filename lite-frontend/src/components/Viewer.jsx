@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { exportNoteToMarkdown, exportNoteToPDF } from '../utils/exportUtils';
+import { searchNotesForLink, insertAtCursor } from '../utils/noteLinking';
+import NoteLinkAutocomplete from './NoteLinkAutocomplete';
+import BacklinksPanel from './BacklinksPanel';
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-function Viewer({ item, type, onRefresh }) {
+function Viewer({ item, type, onRefresh, allNotes = [], onNavigateToNote }) {
     const [note, setNote] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [viewMode, setViewMode] = useState('preview'); // 'preview', 'edit', 'split'
@@ -17,6 +20,13 @@ function Viewer({ item, type, onRefresh }) {
     const [numPages, setNumPages] = useState(null);
     const [showMoveModal, setShowMoveModal] = useState(false);
     const [folders, setFolders] = useState([]);
+
+    // Wiki-style linking state
+    const [showAutocomplete, setShowAutocomplete] = useState(false);
+    const [autocompleteQuery, setAutocompleteQuery] = useState('');
+    const [autocompletePosition, setAutocompletePosition] = useState({ top: 0, left: 0 });
+    const [linkStartPosition, setLinkStartPosition] = useState(0);
+    const textareaRef = useRef(null);
 
     useEffect(() => {
         if (type === 'note' && item) {
@@ -97,11 +107,123 @@ function Viewer({ item, type, onRefresh }) {
                 const updatedNote = await response.json();
                 setNote(updatedNote);
                 setIsEditing(false);
+                setShowAutocomplete(false);
                 onRefresh();
             }
         } catch (error) {
             console.error('Error saving note:', error);
         }
+    };
+
+    // Handle textarea input for wiki-style linking
+    const handleContentChange = (e) => {
+        const value = e.target.value;
+        const cursorPos = e.target.selectionStart;
+
+        setEditContent(value);
+
+        // Check if user is typing [[ for wiki-style link
+        const textBeforeCursor = value.slice(0, cursorPos);
+        const lastOpenBrackets = textBeforeCursor.lastIndexOf('[[');
+
+        if (lastOpenBrackets !== -1) {
+            const textAfterBrackets = textBeforeCursor.slice(lastOpenBrackets + 2);
+
+            // Check if there's a closing ]] before cursor
+            if (!textAfterBrackets.includes(']]')) {
+                // Get cursor position on screen
+                const textarea = e.target;
+                const rect = textarea.getBoundingClientRect();
+                const lineHeight = 24; // Approximate line height
+                const lines = textBeforeCursor.split('\n').length;
+
+                setAutocompleteQuery(textAfterBrackets);
+                setLinkStartPosition(lastOpenBrackets + 2);
+                setAutocompletePosition({
+                    top: rect.top + (lines * lineHeight) + 30,
+                    left: rect.left + 20
+                });
+                setShowAutocomplete(true);
+                return;
+            }
+        }
+
+        setShowAutocomplete(false);
+    };
+
+    // Insert selected note title from autocomplete
+    const handleSelectNoteLink = (noteTitle) => {
+        if (!textareaRef.current) return;
+
+        const textarea = textareaRef.current;
+        const beforeLink = editContent.slice(0, linkStartPosition);
+        const afterCursor = editContent.slice(textarea.selectionStart);
+
+        const newContent = beforeLink + noteTitle + ']]' + afterCursor;
+        setEditContent(newContent);
+        setShowAutocomplete(false);
+
+        // Set cursor after the inserted link
+        setTimeout(() => {
+            const newCursorPos = beforeLink.length + noteTitle.length + 2;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            textarea.focus();
+        }, 0);
+    };
+
+    // Get autocomplete suggestions
+    const autocompleteSuggestions = showAutocomplete
+        ? searchNotesForLink(autocompleteQuery, allNotes)
+        : [];
+
+    // Custom text renderer to handle wiki-style links
+    const WikiLinkText = ({ children }) => {
+        if (typeof children !== 'string') return <>{children}</>;
+
+        const parts = [];
+        const linkRegex = /\[\[([^\]]+)\]\]/g;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(children)) !== null) {
+            // Add text before the link
+            if (match.index > lastIndex) {
+                parts.push(children.slice(lastIndex, match.index));
+            }
+
+            const noteTitle = match[1].trim();
+            const linkedNote = allNotes.find(n => n.title === noteTitle);
+
+            // Add the wiki link
+            parts.push(
+                <button
+                    key={match.index}
+                    onClick={() => linkedNote && onNavigateToNote && onNavigateToNote(linkedNote.id)}
+                    className={`
+                        inline-flex items-center gap-1 px-2 py-0.5 rounded font-mono text-sm
+                        transition-all duration-200
+                        ${linkedNote
+                            ? 'bg-accent-blue/20 text-accent-blue border border-accent-blue/40 hover:bg-accent-blue/30 hover:border-accent-blue cursor-pointer'
+                            : 'bg-red-500/10 text-red-400 border border-red-500/30 cursor-not-allowed'
+                        }
+                    `}
+                    disabled={!linkedNote}
+                    title={linkedNote ? `Go to: ${noteTitle}` : `Note not found: ${noteTitle}`}
+                >
+                    <span>{linkedNote ? '🔗' : '❌'}</span>
+                    {noteTitle}
+                </button>
+            );
+
+            lastIndex = match.index + match[0].length;
+        }
+
+        // Add remaining text
+        if (lastIndex < children.length) {
+            parts.push(children.slice(lastIndex));
+        }
+
+        return <>{parts}</>;
     };
 
     const onDocumentLoadSuccess = ({ numPages }) => {
@@ -150,6 +272,21 @@ function Viewer({ item, type, onRefresh }) {
                             </>
                         ) : (
                             <>
+                                <button
+                                    onClick={() => {
+                                        if (textareaRef.current) {
+                                            insertAtCursor(textareaRef.current, '[[]]');
+                                            // Move cursor between brackets
+                                            const pos = textareaRef.current.selectionStart - 2;
+                                            textareaRef.current.setSelectionRange(pos, pos);
+                                            textareaRef.current.focus();
+                                        }
+                                    }}
+                                    className="px-3 py-2 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono text-xs"
+                                    title="Insert Wiki Link [[]]"
+                                >
+                                    🔗 LINK
+                                </button>
                                 <div className="flex items-center gap-1 border border-dark-border rounded overflow-hidden">
                                     <button
                                         onClick={() => setViewMode('edit')}
@@ -174,7 +311,7 @@ function Viewer({ item, type, onRefresh }) {
                                     </button>
                                 </div>
                                 <button
-                                    onClick={() => { setIsEditing(false); setViewMode('preview'); }}
+                                    onClick={() => { setIsEditing(false); setViewMode('preview'); setShowAutocomplete(false); }}
                                     className="px-4 py-2 rounded border border-dark-border text-dark-muted hover:text-white hover:border-white transition-colors font-mono text-sm"
                                 >
                                     CANCEL
@@ -201,12 +338,22 @@ function Viewer({ item, type, onRefresh }) {
                                     className="w-full px-4 py-2 bg-dark-bg border border-dark-border rounded text-white font-mono text-lg focus:outline-none focus:border-accent-blue transition-colors"
                                     placeholder="Note title"
                                 />
-                                <textarea
-                                    value={editContent}
-                                    onChange={(e) => setEditContent(e.target.value)}
-                                    className="w-full min-h-[500px] px-4 py-3 bg-dark-bg border border-dark-border rounded text-dark-text font-mono text-sm leading-relaxed resize-none focus:outline-none focus:border-accent-blue transition-colors"
-                                    placeholder="Write your markdown content here..."
-                                />
+                                <div className="relative">
+                                    <textarea
+                                        ref={textareaRef}
+                                        value={editContent}
+                                        onChange={handleContentChange}
+                                        className="w-full min-h-[500px] px-4 py-3 bg-dark-bg border border-dark-border rounded text-dark-text font-mono text-sm leading-relaxed resize-none focus:outline-none focus:border-accent-blue transition-colors"
+                                        placeholder="Write your markdown content here... (Tip: Use [[Note Title]] to link to other notes)"
+                                    />
+                                    <NoteLinkAutocomplete
+                                        isOpen={showAutocomplete}
+                                        suggestions={autocompleteSuggestions}
+                                        onSelect={handleSelectNoteLink}
+                                        onClose={() => setShowAutocomplete(false)}
+                                        position={autocompletePosition}
+                                    />
+                                </div>
                             </div>
                         )}
                         {(viewMode === 'preview' || viewMode === 'split') && (
@@ -218,10 +365,18 @@ function Viewer({ item, type, onRefresh }) {
                                         h1: ({ node, ...props }) => <h1 className="text-3xl font-bold text-white mb-4 mt-6" {...props} />,
                                         h2: ({ node, ...props }) => <h2 className="text-2xl font-bold text-white mb-3 mt-5" {...props} />,
                                         h3: ({ node, ...props }) => <h3 className="text-xl font-bold text-white mb-2 mt-4" {...props} />,
-                                        p: ({ node, ...props }) => <p className="text-dark-text mb-4 leading-relaxed" {...props} />,
+                                        p: ({ node, children, ...props }) => (
+                                            <p className="text-dark-text mb-4 leading-relaxed" {...props}>
+                                                <WikiLinkText>{children}</WikiLinkText>
+                                            </p>
+                                        ),
+                                        li: ({ node, children, ...props }) => (
+                                            <li className="text-dark-text" {...props}>
+                                                <WikiLinkText>{children}</WikiLinkText>
+                                            </li>
+                                        ),
                                         ul: ({ node, ...props }) => <ul className="list-disc list-inside text-dark-text mb-4 space-y-2" {...props} />,
                                         ol: ({ node, ...props }) => <ol className="list-decimal list-inside text-dark-text mb-4 space-y-2" {...props} />,
-                                        li: ({ node, ...props }) => <li className="text-dark-text" {...props} />,
                                         code: ({ node, inline, className, children, ...props }) => {
                                             const match = /language-(\w+)/.exec(className || '');
                                             const language = match ? match[1] : '';
@@ -260,52 +415,69 @@ function Viewer({ item, type, onRefresh }) {
                         )}
                     </div>
                 ) : (
-                    <div className="prose prose-invert prose-sm max-w-none">
-                        <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw]}
-                            components={{
-                                h1: ({ node, ...props }) => <h1 className="text-3xl font-bold text-white mb-4 mt-6" {...props} />,
-                                h2: ({ node, ...props }) => <h2 className="text-2xl font-bold text-white mb-3 mt-5" {...props} />,
-                                h3: ({ node, ...props }) => <h3 className="text-xl font-bold text-white mb-2 mt-4" {...props} />,
-                                p: ({ node, ...props }) => <p className="text-dark-text mb-4 leading-relaxed" {...props} />,
-                                ul: ({ node, ...props }) => <ul className="list-disc list-inside text-dark-text mb-4 space-y-2" {...props} />,
-                                ol: ({ node, ...props }) => <ol className="list-decimal list-inside text-dark-text mb-4 space-y-2" {...props} />,
-                                li: ({ node, ...props }) => <li className="text-dark-text" {...props} />,
-                                code: ({ node, inline, className, children, ...props }) => {
-                                    const match = /language-(\w+)/.exec(className || '');
-                                    const language = match ? match[1] : '';
-                                    const isInline = inline || !className;
-                                    return isInline ? (
-                                        <code className="px-1.5 py-0.5 bg-red-500/10 rounded text-red-400 font-mono text-xs" {...props}>
-                                            {children}
-                                        </code>
-                                    ) : (
-                                        <div className="my-4 rounded-lg overflow-hidden border border-dark-border">
-                                            {language && (
-                                                <div className="px-4 py-2 bg-dark-bg border-b border-dark-border text-dark-muted font-mono text-xs">
-                                                    {language}
-                                                </div>
-                                            )}
-                                            <pre className="p-4 bg-[#0d0d0d] overflow-x-auto">
-                                                <code className="text-dark-text font-mono text-sm leading-relaxed" {...props}>
-                                                    {children}
-                                                </code>
-                                            </pre>
-                                        </div>
-                                    );
-                                },
-                                blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-accent-blue pl-4 italic text-dark-muted mb-4" {...props} />,
-                                table: ({ node, ...props }) => <table className="w-full border-collapse border border-dark-border mb-4" {...props} />,
-                                th: ({ node, ...props }) => <th className="border border-dark-border px-3 py-2 bg-dark-bg text-left text-white font-mono text-xs" {...props} />,
-                                td: ({ node, ...props }) => <td className="border border-dark-border px-3 py-2 text-dark-text text-sm" {...props} />,
-                                a: ({ node, ...props }) => <a className="text-accent-blue hover:underline" {...props} />,
-                                strong: ({ node, ...props }) => <strong className="font-bold text-white" {...props} />,
-                                em: ({ node, ...props }) => <em className="italic text-dark-text" {...props} />,
-                            }}
-                        >
-                            {note.content || '*No content yet*'}
-                        </ReactMarkdown>
+                    <div className="space-y-4">
+                        <div className="prose prose-invert prose-sm max-w-none">
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeRaw]}
+                                components={{
+                                    h1: ({ node, ...props }) => <h1 className="text-3xl font-bold text-white mb-4 mt-6" {...props} />,
+                                    h2: ({ node, ...props }) => <h2 className="text-2xl font-bold text-white mb-3 mt-5" {...props} />,
+                                    h3: ({ node, ...props }) => <h3 className="text-xl font-bold text-white mb-2 mt-4" {...props} />,
+                                    p: ({ node, children, ...props }) => (
+                                        <p className="text-dark-text mb-4 leading-relaxed" {...props}>
+                                            <WikiLinkText>{children}</WikiLinkText>
+                                        </p>
+                                    ),
+                                    ul: ({ node, ...props }) => <ul className="list-disc list-inside text-dark-text mb-4 space-y-2" {...props} />,
+                                    ol: ({ node, ...props }) => <ol className="list-decimal list-inside text-dark-text mb-4 space-y-2" {...props} />,
+                                    li: ({ node, children, ...props }) => (
+                                        <li className="text-dark-text" {...props}>
+                                            <WikiLinkText>{children}</WikiLinkText>
+                                        </li>
+                                    ),
+                                    code: ({ node, inline, className, children, ...props }) => {
+                                        const match = /language-(\w+)/.exec(className || '');
+                                        const language = match ? match[1] : '';
+                                        const isInline = inline || !className;
+                                        return isInline ? (
+                                            <code className="px-1.5 py-0.5 bg-red-500/10 rounded text-red-400 font-mono text-xs" {...props}>
+                                                {children}
+                                            </code>
+                                        ) : (
+                                            <div className="my-4 rounded-lg overflow-hidden border border-dark-border">
+                                                {language && (
+                                                    <div className="px-4 py-2 bg-dark-bg border-b border-dark-border text-dark-muted font-mono text-xs">
+                                                        {language}
+                                                    </div>
+                                                )}
+                                                <pre className="p-4 bg-[#0d0d0d] overflow-x-auto">
+                                                    <code className="text-dark-text font-mono text-sm leading-relaxed" {...props}>
+                                                        {children}
+                                                    </code>
+                                                </pre>
+                                            </div>
+                                        );
+                                    },
+                                    blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-accent-blue pl-4 italic text-dark-muted mb-4" {...props} />,
+                                    table: ({ node, ...props }) => <table className="w-full border-collapse border border-dark-border mb-4" {...props} />,
+                                    th: ({ node, ...props }) => <th className="border border-dark-border px-3 py-2 bg-dark-bg text-left text-white font-mono text-xs" {...props} />,
+                                    td: ({ node, ...props }) => <td className="border border-dark-border px-3 py-2 text-dark-text text-sm" {...props} />,
+                                    a: ({ node, ...props }) => <a className="text-accent-blue hover:underline" {...props} />,
+                                    strong: ({ node, ...props }) => <strong className="font-bold text-white" {...props} />,
+                                    em: ({ node, ...props }) => <em className="italic text-dark-text" {...props} />,
+                                }}
+                            >
+                                {note.content || '*No content yet*'}
+                            </ReactMarkdown>
+                        </div>
+
+                        {/* Backlinks Panel */}
+                        <BacklinksPanel
+                            currentNote={note}
+                            allNotes={allNotes}
+                            onNavigateToNote={onNavigateToNote}
+                        />
                     </div>
                 )}
             </div>
