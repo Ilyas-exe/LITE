@@ -183,12 +183,11 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                     folderId: destinationFolderId
                 };
             } else if (moveItem.type === 'document') {
-                // For documents, we need a different approach - update via a move endpoint
-                // Since the current backend doesn't support this, we'll skip document moving for now
-                alert('Moving documents is not yet supported');
-                setShowMoveModal(false);
-                setMoveItem(null);
-                return;
+                // For documents, just update the folder
+                endpoint = `/api/kb/documents/${moveItem.id}`;
+                body = {
+                    folderId: destinationFolderId
+                };
             }
 
             const response = await fetch(`http://localhost:8080${endpoint}`, {
@@ -315,12 +314,24 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                                     <span className="text-[10px]">{doc.fileName.split('.').pop().toUpperCase().slice(0, 3)}</span>
                                     <span className="truncate">{doc.fileName}</span>
                                 </span>
-                                <button
-                                    onClick={() => handleDelete(doc.id, 'document')}
-                                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-xs px-1 transition-opacity"
-                                >
-                                    ×
-                                </button>
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => {
+                                            setMoveItem({ id: doc.id, type: 'document' });
+                                            setShowMoveModal(true);
+                                        }}
+                                        className="text-accent-blue hover:text-accent-blue/80 text-xs px-1"
+                                        title="Move"
+                                    >
+                                        ↔
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(doc.id, 'document')}
+                                        className="text-red-400 hover:text-red-300 text-xs px-1"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -425,12 +436,24 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                             <span className="text-[10px]">{doc.fileName.split('.').pop().toUpperCase().slice(0, 3)}</span>
                             <span className="truncate">{doc.fileName}</span>
                         </span>
-                        <button
-                            onClick={() => handleDelete(doc.id, 'document')}
-                            className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-xs px-1 transition-opacity"
-                        >
-                            ×
-                        </button>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                                onClick={() => {
+                                    setMoveItem({ id: doc.id, type: 'document' });
+                                    setShowMoveModal(true);
+                                }}
+                                className="text-accent-blue hover:text-accent-blue/80 text-xs px-1"
+                                title="Move"
+                            >
+                                ↔
+                            </button>
+                            <button
+                                onClick={() => handleDelete(doc.id, 'document')}
+                                className="text-red-400 hover:text-red-300 text-xs px-1"
+                            >
+                                ×
+                            </button>
+                        </div>
                     </div>
                 ))}
 
