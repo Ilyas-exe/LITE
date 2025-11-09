@@ -1,0 +1,229 @@
+.file-tree {
+    padding: 1rem;
+}
+
+.tree-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #667eea;
+}
+
+.tree-header h3 {
+    margin: 0;
+    color: #667eea;
+}
+
+.tree-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-tree-action {
+    padding: 0.3rem 0.6rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-tree-action:hover {
+    background: #5568d3;
+    transform: scale(1.1);
+}
+
+.active-folder-indicator {
+    background: #e0f2fe;
+    border: 1px solid #38bdf8;
+    border-radius: 6px;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+    color: #0c4a6e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.btn-clear-folder {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-clear-folder:hover {
+    background: #dc2626;
+}
+
+.tree-content {
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+.tree-folder {
+    margin-bottom: 0.5rem;
+}
+
+.tree-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    margin: 0.2rem 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.tree-item:hover {
+    background: #f0f0f0;
+}
+
+.tree-item.active-folder {
+    background: #dbeafe;
+    border-left: 3px solid #3b82f6;
+}
+
+.tree-item span {
+    cursor: pointer;
+    flex: 1;
+}
+
+.folder-toggle {
+    font-weight: 500;
+    color: #667eea;
+}
+
+.note-item span {
+    color: #333;
+}
+
+.doc-item span {
+    color: #666;
+}
+
+.btn-delete-small {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.tree-item:hover .btn-delete-small {
+    opacity: 1;
+}
+
+.btn-delete-small:hover {
+    background: #dc2626;
+}
+
+.tree-children {
+    margin-left: 10px;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    min-width: 300px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 0.7rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.file-selected {
+    color: #10b981;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background: #f0fdf4;
+    border-radius: 4px;
+}
+
+.modal-content input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.modal-actions button {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.modal-actions button:first-child {
+    background: #e0e0e0;
+    color: #666;
+}
+
+.modal-actions button:first-child:hover {
+    background: #d0d0d0;
+}
+
+.modal-actions button:last-child {
+    background: #667eea;
+    color: white;
+}
+
+.modal-actions button:last-child:hover {
+    background: #5568d3;
+}
