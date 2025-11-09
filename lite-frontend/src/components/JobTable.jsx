@@ -141,6 +141,82 @@ function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
         );
     }
 
+    // TABLE VIEW
+    if (viewMode === 'table') {
+        return (
+            <div className="card overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b border-dark-border">
+                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Company</th>
+                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Role</th>
+                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Status</th>
+                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Date</th>
+                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">CV</th>
+                                <th className="text-right py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {jobs.map((job) => (
+                                <tr key={job.id} className="border-b border-dark-border hover:bg-white/5 transition-colors">
+                                    <td className="py-3 px-4 text-sm text-white font-mono font-medium">{job.company}</td>
+                                    <td className="py-3 px-4 text-sm text-dark-muted font-mono">{job.role}</td>
+                                    <td className="py-3 px-4">
+                                        <span className={getStatusBadge(job.status)}>
+                                            {job.status.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td className="py-3 px-4 text-sm text-dark-muted font-mono">
+                                        {new Date(job.dateApplied).toLocaleDateString()}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        {job.cvUrl ? (
+                                            <a
+                                                href={job.cvUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-xs text-accent-blue hover:underline font-mono"
+                                            >
+                                                VIEW
+                                            </a>
+                                        ) : (
+                                            <span className="text-xs text-dark-muted font-mono">—</span>
+                                        )}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={() => handleFileSelect(job.id)}
+                                                disabled={uploadingId === job.id}
+                                                className="text-xs px-2.5 py-1.5 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono disabled:opacity-50"
+                                            >
+                                                {uploadingId === job.id ? '...' : 'CV'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleEdit(job)}
+                                                className="text-xs px-2.5 py-1.5 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono"
+                                            >
+                                                EDIT
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(job.id)}
+                                                className="text-xs px-2.5 py-1.5 rounded bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500 transition-colors font-mono"
+                                            >
+                                                DEL
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+    }
+
+    // CARDS VIEW
     return (
         <div className="space-y-4">
             {jobs.map((job) => (
@@ -247,19 +323,19 @@ function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
                                 <button
                                     onClick={() => handleFileSelect(job.id)}
                                     disabled={uploadingId === job.id}
-                                    className="flex-1 text-xs px-3 py-2 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono disabled:opacity-50"
+                                    className="flex-1 text-xs px-3 py-2 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono disabled:opacity-50"
                                 >
                                     {uploadingId === job.id ? 'UPLOADING...' : 'UPLOAD_CV'}
                                 </button>
                                 <button
                                     onClick={() => handleEdit(job)}
-                                    className="flex-1 text-xs px-3 py-2 rounded border border-dark-border text-dark-muted hover:text-white hover:border-white transition-colors font-mono"
+                                    className="flex-1 text-xs px-3 py-2 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono"
                                 >
                                     EDIT
                                 </button>
                                 <button
                                     onClick={() => handleDelete(job.id)}
-                                    className="flex-1 text-xs px-3 py-2 rounded border border-dark-border text-dark-muted hover:text-red-400 hover:border-red-400 transition-colors font-mono"
+                                    className="flex-1 text-xs px-3 py-2 rounded bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500 transition-colors font-mono"
                                 >
                                     DELETE
                                 </button>
