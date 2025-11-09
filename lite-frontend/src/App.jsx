@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
 import JobTrackerPage from './pages/JobTrackerPage';
 import TaskManagerPage from './pages/TaskManagerPage';
+import KnowledgeBasePage from './pages/KnowledgeBasePage';
 import './App.css';
 
 function App() {
@@ -47,6 +48,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <TaskManagerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/knowledge-base"
+            element={
+              <ProtectedRoute>
+                <KnowledgeBasePage />
               </ProtectedRoute>
             }
           />
