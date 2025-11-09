@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { Document, Page, pdfjs } from 'react-pdf';
+import { exportNoteToMarkdown, exportNoteToPDF } from '../utils/exportUtils';
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -125,12 +126,28 @@ function Viewer({ item, type, onRefresh }) {
                     </h1>
                     <div className="flex items-center gap-2">
                         {!isEditing ? (
-                            <button
-                                onClick={() => { setIsEditing(true); setViewMode('split'); }}
-                                className="px-4 py-2 rounded bg-accent-orange/10 text-accent-orange border border-accent-orange/30 hover:bg-accent-orange/20 hover:border-accent-orange transition-colors font-mono text-sm"
-                            >
-                                EDIT
-                            </button>
+                            <>
+                                <button
+                                    onClick={() => exportNoteToMarkdown(note)}
+                                    className="px-3 py-2 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono text-xs"
+                                    title="Export as Markdown"
+                                >
+                                    MD
+                                </button>
+                                <button
+                                    onClick={() => exportNoteToPDF(note)}
+                                    className="px-3 py-2 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono text-xs"
+                                    title="Export as PDF"
+                                >
+                                    PDF
+                                </button>
+                                <button
+                                    onClick={() => { setIsEditing(true); setViewMode('split'); }}
+                                    className="px-4 py-2 rounded bg-accent-orange/10 text-accent-orange border border-accent-orange/30 hover:bg-accent-orange/20 hover:border-accent-orange transition-colors font-mono text-sm"
+                                >
+                                    EDIT
+                                </button>
+                            </>
                         ) : (
                             <>
                                 <div className="flex items-center gap-1 border border-dark-border rounded overflow-hidden">
