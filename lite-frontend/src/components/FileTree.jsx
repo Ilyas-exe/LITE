@@ -218,6 +218,22 @@ function FileTree({ tree, onItemClick, onRefresh }) {
         }
     };
 
+    // Recursive helper to render folder options in the move modal
+    const renderFolderOptions = (folder, depth = 0) => {
+        return (
+            <div key={folder.id}>
+                <div
+                    className="folder-option"
+                    style={{ paddingLeft: `${depth * 20}px` }}
+                    onClick={() => handleMoveToFolder(folder.id)}
+                >
+                    📁 {folder.name}
+                </div>
+                {folder.subFolders?.map(subFolder => renderFolderOptions(subFolder, depth + 1))}
+            </div>
+        );
+    };
+
     const renderFolder = (folder, depth = 0) => {
         const isExpanded = expandedFolders.has(folder.id);
         const isActive = activeFolder === folder.id;
@@ -250,12 +266,24 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                                 <span onClick={() => onItemClick(note, 'note')}>
                                     📝 {note.title}
                                 </span>
-                                <button
-                                    onClick={() => handleDelete(note.id, 'note')}
-                                    className="btn-delete-small"
-                                >
-                                    ×
-                                </button>
+                                <div className="item-actions">
+                                    <button
+                                        onClick={() => {
+                                            setMoveItem({ id: note.id, type: 'note' });
+                                            setShowMoveModal(true);
+                                        }}
+                                        className="btn-move-small"
+                                        title="Move to folder"
+                                    >
+                                        ↔
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(note.id, 'note')}
+                                        className="btn-delete-small"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
                             </div>
                         ))}
                         {folder.documents?.map(doc => (
@@ -263,12 +291,14 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                                 <span onClick={() => onItemClick(doc, 'document')}>
                                     📄 {doc.fileName}
                                 </span>
-                                <button
-                                    onClick={() => handleDelete(doc.id, 'document')}
-                                    className="btn-delete-small"
-                                >
-                                    ×
-                                </button>
+                                <div className="item-actions">
+                                    <button
+                                        onClick={() => handleDelete(doc.id, 'document')}
+                                        className="btn-delete-small"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -307,12 +337,24 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                         <span onClick={() => onItemClick(note, 'note')}>
                             📝 {note.title}
                         </span>
-                        <button
-                            onClick={() => handleDelete(note.id, 'note')}
-                            className="btn-delete-small"
-                        >
-                            ×
-                        </button>
+                        <div className="item-actions">
+                            <button
+                                onClick={() => {
+                                    setMoveItem({ id: note.id, type: 'note' });
+                                    setShowMoveModal(true);
+                                }}
+                                className="btn-move-small"
+                                title="Move to folder"
+                            >
+                                ↔
+                            </button>
+                            <button
+                                onClick={() => handleDelete(note.id, 'note')}
+                                className="btn-delete-small"
+                            >
+                                ×
+                            </button>
+                        </div>
                     </div>
                 ))}
 
@@ -322,12 +364,14 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                         <span onClick={() => onItemClick(doc, 'document')}>
                             📄 {doc.fileName}
                         </span>
-                        <button
-                            onClick={() => handleDelete(doc.id, 'document')}
-                            className="btn-delete-small"
-                        >
-                            ×
-                        </button>
+                        <div className="item-actions">
+                            <button
+                                onClick={() => handleDelete(doc.id, 'document')}
+                                className="btn-delete-small"
+                            >
+                                ×
+                            </button>
+                        </div>
                     </div>
                 ))}
 
@@ -369,6 +413,28 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                                 setUploadFile(null);
                             }}>Cancel</button>
                             <button onClick={handleUploadDocument}>Upload</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Move Modal */}
+            {showMoveModal && (
+                <div className="modal-overlay" onClick={() => setShowMoveModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h3>Move to Folder</h3>
+                        <p className="modal-description">Select a destination folder:</p>
+                        <div className="folder-picker">
+                            <div
+                                className="folder-option"
+                                onClick={() => handleMoveToFolder(null)}
+                            >
+                                📁 Root (Top Level)
+                            </div>
+                            {tree.subFolders?.map(folder => renderFolderOptions(folder))}
+                        </div>
+                        <div className="modal-actions">
+                            <button onClick={() => setShowMoveModal(false)}>Cancel</button>
                         </div>
                     </div>
                 </div>
