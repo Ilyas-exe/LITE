@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import './AddJobForm.css';
 
 function AddJobForm({ onJobAdded }) {
     const [formData, setFormData] = useState({
         company: '',
         role: '',
         status: 'Applied',
-        dateApplied: new Date().toISOString().split('T')[0] // Today's date
+        dateApplied: new Date().toISOString().split('T')[0]
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -16,7 +15,6 @@ function AddJobForm({ onJobAdded }) {
         setLoading(true);
         setError('');
 
-        // Validation
         if (!formData.company.trim() || !formData.role.trim()) {
             setError('Company and Role are required');
             setLoading(false);
@@ -37,7 +35,6 @@ function AddJobForm({ onJobAdded }) {
                 throw new Error('Failed to create job application');
             }
 
-            // Reset form
             setFormData({
                 company: '',
                 role: '',
@@ -45,7 +42,6 @@ function AddJobForm({ onJobAdded }) {
                 dateApplied: new Date().toISOString().split('T')[0]
             });
 
-            // Notify parent to refresh the list
             onJobAdded();
         } catch (err) {
             setError(err.message);
@@ -63,52 +59,67 @@ function AddJobForm({ onJobAdded }) {
     };
 
     return (
-        <div className="add-job-form-container">
-            <h3>➕ Add New Job Application</h3>
+        <div className="card">
+            <div className="flex items-center justify-between mb-6">
+                <h3 className="text-base font-medium text-white font-mono">ADD_APPLICATION</h3>
+                <div className="text-xs text-dark-muted font-mono">NEW</div>
+            </div>
 
             {error && (
-                <div className="form-error">
-                    ⚠️ {error}
+                <div className="bg-red-500/5 border border-red-500/20 text-red-400 px-4 py-3 rounded-md text-sm font-mono mb-4">
+                    {error}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="add-job-form">
-                <div className="form-row">
-                    <div className="form-group">
-                        <label htmlFor="company">Company *</label>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label htmlFor="company" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Company *
+                        </label>
                         <input
                             type="text"
                             id="company"
                             name="company"
                             value={formData.company}
                             onChange={handleChange}
-                            placeholder="e.g., Google"
+                            placeholder="Google"
                             required
+                            disabled={loading}
+                            className="input-field"
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="role">Role *</label>
+                    <div className="space-y-2">
+                        <label htmlFor="role" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Role *
+                        </label>
                         <input
                             type="text"
                             id="role"
                             name="role"
                             value={formData.role}
                             onChange={handleChange}
-                            placeholder="e.g., Software Engineer"
+                            placeholder="Software Engineer"
                             required
+                            disabled={loading}
+                            className="input-field"
                         />
                     </div>
                 </div>
 
-                <div className="form-row">
-                    <div className="form-group">
-                        <label htmlFor="status">Status</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label htmlFor="status" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Status
+                        </label>
                         <select
                             id="status"
                             name="status"
                             value={formData.status}
                             onChange={handleChange}
+                            disabled={loading}
+                            className="input-field"
                         >
                             <option value="Applied">Applied</option>
                             <option value="Interview">Interview</option>
@@ -117,8 +128,10 @@ function AddJobForm({ onJobAdded }) {
                         </select>
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="dateApplied">Date Applied</label>
+                    <div className="space-y-2">
+                        <label htmlFor="dateApplied" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Date Applied
+                        </label>
                         <input
                             type="date"
                             id="dateApplied"
@@ -126,12 +139,14 @@ function AddJobForm({ onJobAdded }) {
                             value={formData.dateApplied}
                             onChange={handleChange}
                             required
+                            disabled={loading}
+                            className="input-field"
                         />
                     </div>
                 </div>
 
-                <button type="submit" className="submit-btn" disabled={loading}>
-                    {loading ? '⏳ Adding...' : '✓ Add Job Application'}
+                <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
+                    {loading ? 'ADDING...' : 'ADD APPLICATION'}
                 </button>
             </form>
         </div>
