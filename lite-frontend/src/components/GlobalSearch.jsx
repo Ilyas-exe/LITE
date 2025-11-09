@@ -75,23 +75,23 @@ function GlobalSearch({ isOpen, onClose }) {
     const totalResults = results.jobs.length + results.tasks.length + results.notes.length;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-6 bg-black/80 backdrop-blur-sm animate-fade-in">
-            <div className="w-full max-w-2xl">
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-12 md:pt-20 px-4 md:px-6 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+            <div className="w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
                 {/* Search Input */}
                 <div className="card mb-4">
-                    <div className="flex items-center gap-3">
-                        <span className="text-dark-muted font-mono text-sm">SEARCH:</span>
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <span className="text-dark-muted font-mono text-xs md:text-sm hidden sm:inline">SEARCH:</span>
                         <input
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Type to search jobs, tasks, notes..."
+                            placeholder="Search jobs, tasks, notes..."
                             autoFocus
                             className="flex-1 bg-transparent border-none text-white font-mono text-sm focus:outline-none placeholder:text-dark-muted"
                         />
                         <button
                             onClick={onClose}
-                            className="text-dark-muted hover:text-white font-mono text-sm transition-colors"
+                            className="text-dark-muted hover:text-white font-mono text-xs md:text-sm transition-colors px-2"
                         >
                             ESC
                         </button>
