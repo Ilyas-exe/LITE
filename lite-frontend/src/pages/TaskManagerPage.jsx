@@ -1,9 +1,11 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import KanbanBoard from '../components/KanbanBoard';
 import AddTaskModal from '../components/AddTaskModal';
+import MobileNav from '../components/MobileNav';
 import { exportTasksToCSV, exportTasksToPDF } from '../utils/exportUtils';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 function TaskManagerPage() {
     const { user, logout } = useContext(AuthContext);
@@ -14,6 +16,15 @@ function TaskManagerPage() {
     const [error, setError] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const searchInputRef = useRef(null);
+
+    // Keyboard shortcuts
+    useKeyboardShortcuts({
+        onNew: () => setShowAddModal(true),
+        onExport: () => exportTasksToCSV(filteredTasks),
+        onFocusSearch: () => searchInputRef.current?.focus(),
+        onEscape: () => setShowAddModal(false)
+    });
 
     useEffect(() => {
         fetchTasks();
@@ -74,28 +85,28 @@ function TaskManagerPage() {
     const doneTasks = filteredTasks.filter(task => task.status === 'DONE');
 
     return (
-        <div className="min-h-screen animate-fade-in">
+        <div className="min-h-screen animate-fade-in pb-20 md:pb-0">
             {/* Header */}
             <header className="border-b border-dark-border bg-dark-bg/80 backdrop-blur-sm sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2 md:gap-4">
                         <button
                             onClick={handleBackToDashboard}
-                            className="text-dark-muted hover:text-white font-mono text-sm transition-colors"
+                            className="text-dark-muted hover:text-white font-mono text-xs md:text-sm transition-colors"
                         >
                             ← BACK
                         </button>
                         <div className="h-4 w-px bg-dark-border"></div>
-                        <h1 className="text-lg font-medium text-white font-mono">TASK_MANAGER</h1>
+                        <h1 className="text-base md:text-lg font-medium text-white font-mono">TASK_MANAGER</h1>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <div className="text-sm text-dark-muted font-mono">
+                    <div className="flex items-center gap-2 md:gap-6">
+                        <div className="text-xs md:text-sm text-dark-muted font-mono hidden sm:block">
                             <span className="text-dark-text">{user?.username}</span>
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-4 py-1.5 rounded"
+                            className="text-xs md:text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-2 md:px-4 py-1.5 rounded"
                         >
                             LOGOUT
                         </button>
@@ -104,18 +115,18 @@ function TaskManagerPage() {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-6 py-12">
+            <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-12">
                 {/* Page Header */}
-                <div className="flex items-center justify-between mb-8 animate-slide-up">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4 animate-slide-up">
                     <div>
-                        <h2 className="text-2xl font-medium text-white mb-2 font-mono">
+                        <h2 className="text-xl md:text-2xl font-medium text-white mb-1 md:mb-2 font-mono">
                             Organize Tasks
                         </h2>
-                        <p className="text-dark-muted font-mono text-sm">
+                        <p className="text-dark-muted font-mono text-xs md:text-sm">
                             Kanban-style task management
                         </p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 md:gap-3">
                         <button
                             onClick={() => exportTasksToCSV(tasks)}
                             disabled={tasks.length === 0}
@@ -162,6 +173,7 @@ function TaskManagerPage() {
                             <div className="flex items-center gap-3">
                                 <span className="text-dark-muted font-mono text-xs font-bold">SEARCH</span>
                                 <input
+                                    ref={searchInputRef}
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => handleSearch(e.target.value)}
@@ -198,6 +210,9 @@ function TaskManagerPage() {
                     </div>
                 )}
             </main>
+
+            {/* Mobile Navigation */}
+            <MobileNav />
         </div>
     );
 }
