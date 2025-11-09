@@ -133,7 +133,7 @@ function JobTrackerPage() {
                         {/* Search Bar */}
                         <div className="card">
                             <div className="flex items-center gap-3">
-                                <span className="text-dark-muted font-mono text-sm">🔍</span>
+                                <span className="text-dark-muted font-mono text-xs font-bold">SEARCH</span>
                                 <input
                                     type="text"
                                     value={searchQuery}
