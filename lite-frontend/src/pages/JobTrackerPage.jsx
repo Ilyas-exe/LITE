@@ -170,27 +170,13 @@ function JobTrackerPage() {
                                 SHOWING: <span className="text-white font-medium">{filteredJobs.length}</span> / {jobs.length} {jobs.length === 1 ? 'APPLICATION' : 'APPLICATIONS'}
                             </div>
                             <div className="flex items-center gap-3">
-                                {/* View Toggle */}
-                                <div className="flex items-center gap-1 border border-dark-border rounded overflow-hidden">
-                                    <button
-                                        onClick={() => setViewMode('table')}
-                                        className={`text-xs px-3 py-1.5 font-mono transition-colors ${viewMode === 'table'
-                                            ? 'bg-accent-blue text-black'
-                                            : 'text-dark-muted hover:text-white'
-                                            }`}
-                                    >
-                                        TABLE
-                                    </button>
-                                    <button
-                                        onClick={() => setViewMode('cards')}
-                                        className={`text-xs px-3 py-1.5 font-mono transition-colors ${viewMode === 'cards'
-                                            ? 'bg-accent-blue text-black'
-                                            : 'text-dark-muted hover:text-white'
-                                            }`}
-                                    >
-                                        CARDS
-                                    </button>
-                                </div>
+                                {/* Add Button */}
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="text-xs px-3 py-1.5 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono"
+                                >
+                                    + ADD
+                                </button>
 
                                 {/* Export Buttons */}
                                 <button
@@ -211,18 +197,9 @@ function JobTrackerPage() {
                         </div>
 
                         {/* Job Display */}
-                        <JobTable jobs={filteredJobs} onRefresh={fetchJobs} viewMode={viewMode} />
+                        <JobTable jobs={filteredJobs} onRefresh={fetchJobs} />
                     </div>
                 )}
-
-                {/* Floating Add Button */}
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="fixed bottom-8 right-8 w-14 h-14 bg-accent-blue hover:bg-accent-blue/80 text-black rounded-full flex items-center justify-center text-2xl shadow-lg shadow-accent-blue/20 transition-all hover:scale-110 z-50 font-mono"
-                    title="Add Job Application"
-                >
-                    +
-                </button>
 
                 {/* Add Job Modal */}
                 {showAddModal && (
