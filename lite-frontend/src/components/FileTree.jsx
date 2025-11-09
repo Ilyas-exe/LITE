@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TemplateSelector from './TemplateSelector';
 
 function FileTree({ tree, onItemClick, onRefresh }) {
     const [expandedFolders, setExpandedFolders] = useState(new Set());
@@ -10,6 +11,7 @@ function FileTree({ tree, onItemClick, onRefresh }) {
     const [uploadFile, setUploadFile] = useState(null);
     const [activeFolder, setActiveFolder] = useState(null); // Track currently selected folder for creating items
     const [moveItem, setMoveItem] = useState(null); // Item being moved: {id, type}
+    const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
     const toggleFolder = (folderId) => {
         const newExpanded = new Set(expandedFolders);
@@ -62,7 +64,7 @@ function FileTree({ tree, onItemClick, onRefresh }) {
         }
     };
 
-    const handleCreateNote = async () => {
+    const handleCreateNoteWithTemplate = async (template) => {
         try {
             const response = await fetch('http://localhost:8080/api/kb/notes', {
                 method: 'POST',
@@ -71,8 +73,8 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
                 body: JSON.stringify({
-                    title: 'Untitled',
-                    content: '',
+                    title: template.id === 'blank' ? 'Untitled' : template.name,
+                    content: template.content,
                     folderId: activeFolder // Use currently selected folder
                 })
             });
@@ -363,7 +365,7 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                     <button onClick={() => setShowNewFolderModal(true)} className="text-xs px-2 py-1 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono" title="New Folder">
                         DIR
                     </button>
-                    <button onClick={handleCreateNote} className="text-xs px-2 py-1 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono" title="New Note">
+                    <button onClick={() => setShowTemplateSelector(true)} className="text-xs px-2 py-1 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono" title="New Note from Template">
                         MD
                     </button>
                     <button onClick={() => setShowUploadModal(true)} className="text-xs px-2 py-1 rounded bg-accent-orange/10 text-accent-orange border border-accent-orange/30 hover:bg-accent-orange/20 hover:border-accent-orange transition-colors font-mono" title="Upload">
@@ -519,6 +521,13 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                     </div>
                 </div>
             )}
+
+            {/* Template Selector */}
+            <TemplateSelector
+                isOpen={showTemplateSelector}
+                onSelectTemplate={handleCreateNoteWithTemplate}
+                onClose={() => setShowTemplateSelector(false)}
+            />
         </div>
     );
 }
