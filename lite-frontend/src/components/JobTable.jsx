@@ -1,9 +1,10 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 
-function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
+function JobTable({ jobs, onRefresh }) {
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({});
     const [uploadingId, setUploadingId] = useState(null);
+    const [changingStatusId, setChangingStatusId] = useState(null);
 
     const handleEdit = (job) => {
         setEditingId(job.id);
@@ -31,13 +32,11 @@ function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
                 body: JSON.stringify(editForm)
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to update job');
-            }
+            if (!response.ok) throw new Error('Failed to update job');
 
             setEditingId(null);
             setEditForm({});
-            onRefresh(); // Refresh the list
+            onRefresh();
         } catch (error) {
             console.error('Error updating job:', error);
             alert('Failed to update job application');
@@ -45,23 +44,16 @@ function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this job application?')) {
-            return;
-        }
+        if (!window.confirm('Are you sure you want to delete this job application?')) return;
 
         try {
             const response = await fetch(`http://localhost:8080/api/jobs/${id}`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to delete job');
-            }
-
-            onRefresh(); // Refresh the list
+            if (!response.ok) throw new Error('Failed to delete job');
+            onRefresh();
         } catch (error) {
             console.error('Error deleting job:', error);
             alert('Failed to delete job application');
@@ -74,7 +66,6 @@ function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
             return;
         }
 
-        // Check file size (10MB max)
         if (file.size > 10 * 1024 * 1024) {
             alert('File size must be less than 10MB');
             return;
@@ -88,18 +79,14 @@ function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
 
             const response = await fetch(`http://localhost:8080/api/jobs/${id}/upload-cv`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                 body: formData
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to upload CV');
-            }
+            if (!response.ok) throw new Error('Failed to upload CV');
 
-            alert('CV uploaded successfully! ✅');
-            onRefresh(); // Refresh the list
+            alert('CV uploaded successfully!');
+            onRefresh();
         } catch (error) {
             console.error('Error uploading CV:', error);
             alert('Failed to upload CV');
@@ -114,11 +101,31 @@ function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
         input.accept = '.pdf,.doc,.docx';
         input.onchange = (e) => {
             const file = e.target.files[0];
-            if (file) {
-                handleUploadCV(id, file);
-            }
+            if (file) handleUploadCV(id, file);
         };
         input.click();
+    };
+
+    const handleStatusChange = async (id, newStatus) => {
+        try {
+            const job = jobs.find(j => j.id === id);
+            const response = await fetch(`http://localhost:8080/api/jobs/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ ...job, status: newStatus })
+            });
+
+            if (!response.ok) throw new Error('Failed to update status');
+
+            setChangingStatusId(null);
+            onRefresh();
+        } catch (error) {
+            console.error('Error updating status:', error);
+            alert('Failed to update status');
+        }
     };
 
     const getStatusBadge = (status) => {
@@ -134,216 +141,158 @@ function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
     if (jobs.length === 0) {
         return (
             <div className="card text-center py-16">
-                <div className="text-4xl mb-4">📝</div>
+                <div className="text-4xl mb-4"></div>
                 <h3 className="text-lg font-medium text-white mb-2 font-mono">NO_APPLICATIONS</h3>
                 <p className="text-sm text-dark-muted font-mono">Start tracking to stay organized</p>
             </div>
         );
     }
 
-    // TABLE VIEW
-    if (viewMode === 'table') {
-        return (
-            <div className="card overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-dark-border">
-                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Company</th>
-                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Role</th>
-                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Status</th>
-                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Date</th>
-                                <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">CV</th>
-                                <th className="text-right py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {jobs.map((job) => (
-                                <tr key={job.id} className="border-b border-dark-border hover:bg-white/5 transition-colors">
-                                    <td className="py-3 px-4 text-sm text-white font-mono font-medium">{job.company}</td>
-                                    <td className="py-3 px-4 text-sm text-dark-muted font-mono">{job.role}</td>
-                                    <td className="py-3 px-4">
-                                        <span className={getStatusBadge(job.status)}>
-                                            {job.status.toUpperCase()}
-                                        </span>
-                                    </td>
-                                    <td className="py-3 px-4 text-sm text-dark-muted font-mono">
-                                        {new Date(job.dateApplied).toLocaleDateString()}
-                                    </td>
-                                    <td className="py-3 px-4">
-                                        {job.cvUrl ? (
-                                            <a
-                                                href={job.cvUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-xs text-accent-blue hover:underline font-mono"
-                                            >
-                                                VIEW
-                                            </a>
-                                        ) : (
-                                            <span className="text-xs text-dark-muted font-mono">—</span>
-                                        )}
-                                    </td>
-                                    <td className="py-3 px-4">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button
-                                                onClick={() => handleFileSelect(job.id)}
-                                                disabled={uploadingId === job.id}
-                                                className="text-xs px-2.5 py-1.5 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono disabled:opacity-50"
-                                            >
-                                                {uploadingId === job.id ? '...' : 'CV'}
-                                            </button>
-                                            <button
-                                                onClick={() => handleEdit(job)}
-                                                className="text-xs px-2.5 py-1.5 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono"
-                                            >
-                                                EDIT
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(job.id)}
-                                                className="text-xs px-2.5 py-1.5 rounded bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500 transition-colors font-mono"
-                                            >
-                                                DEL
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        );
-    }
-
-    // CARDS VIEW
     return (
-        <div className="space-y-4">
-            {jobs.map((job) => (
-                <div key={job.id} className="card">
-                    {editingId === job.id ? (
-                        // Edit Mode
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between mb-4">
-                                <h4 className="text-sm uppercase tracking-wider text-dark-muted font-medium font-mono">EDIT_MODE</h4>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="block text-xs uppercase tracking-wider text-dark-muted font-medium">Company</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.company}
-                                        onChange={(e) => setEditForm({ ...editForm, company: e.target.value })}
-                                        className="input-field"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="block text-xs uppercase tracking-wider text-dark-muted font-medium">Role</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.role}
-                                        onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                                        className="input-field"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="block text-xs uppercase tracking-wider text-dark-muted font-medium">Status</label>
-                                    <select
-                                        value={editForm.status}
-                                        onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                                        className="input-field"
-                                    >
-                                        <option value="Applied">Applied</option>
-                                        <option value="Interview">Interview</option>
-                                        <option value="Offer">Offer</option>
-                                        <option value="Rejected">Rejected</option>
-                                    </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="block text-xs uppercase tracking-wider text-dark-muted font-medium">Date</label>
-                                    <input
-                                        type="date"
-                                        value={editForm.dateApplied}
-                                        onChange={(e) => setEditForm({ ...editForm, dateApplied: e.target.value })}
-                                        className="input-field"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3 pt-4 border-t border-dark-border">
-                                <button onClick={() => handleSaveEdit(job.id)} className="btn-primary flex-1">
-                                    SAVE
-                                </button>
-                                <button
-                                    onClick={handleCancelEdit}
-                                    className="flex-1 px-5 py-2.5 rounded-md border border-dark-border text-dark-muted hover:text-white hover:border-white transition-colors font-mono text-sm"
-                                >
-                                    CANCEL
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
-                        // View Mode
-                        <div>
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="flex-1">
-                                    <h3 className="text-base font-medium text-white mb-1 font-mono">{job.company}</h3>
-                                    <p className="text-sm text-dark-muted font-mono">{job.role}</p>
-                                </div>
-                                <span className={getStatusBadge(job.status)}>
-                                    {job.status.toUpperCase()}
-                                </span>
-                            </div>
-
-                            <div className="flex items-center justify-between text-xs text-dark-muted font-mono border-t border-dark-border pt-3">
-                                <div>
-                                    APPLIED: {new Date(job.dateApplied).toLocaleDateString()}
-                                </div>
-                                <div className="flex items-center gap-2">
+        <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="w-full">
+                    <thead>
+                        <tr className="border-b border-dark-border">
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Company</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Role</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Status</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Date</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">CV</th>
+                            <th className="text-right py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {jobs.map((job) => (
+                            <tr key={job.id} className="border-b border-dark-border hover:bg-white/5 transition-colors">
+                                <td className="py-3 px-4">
+                                    {editingId === job.id ? (
+                                        <input
+                                            type="text"
+                                            value={editForm.company}
+                                            onChange={(e) => setEditForm({ ...editForm, company: e.target.value })}
+                                            className="w-full px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-white font-mono focus:outline-none"
+                                        />
+                                    ) : (
+                                        <span className="text-sm text-white font-mono font-medium">{job.company}</span>
+                                    )}
+                                </td>
+                                
+                                <td className="py-3 px-4">
+                                    {editingId === job.id ? (
+                                        <input
+                                            type="text"
+                                            value={editForm.role}
+                                            onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                                            className="w-full px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-dark-muted font-mono focus:outline-none"
+                                        />
+                                    ) : (
+                                        <span className="text-sm text-dark-muted font-mono">{job.role}</span>
+                                    )}
+                                </td>
+                                
+                                <td className="py-3 px-4 relative">
+                                    {changingStatusId === job.id ? (
+                                        <select
+                                            value={job.status}
+                                            onChange={(e) => handleStatusChange(job.id, e.target.value)}
+                                            onBlur={() => setChangingStatusId(null)}
+                                            autoFocus
+                                            className="px-2 py-1 bg-dark-bg border border-accent-blue rounded text-xs text-white font-mono focus:outline-none cursor-pointer"
+                                        >
+                                            <option value="Applied">Applied</option>
+                                            <option value="Interview">Interview</option>
+                                            <option value="Offer">Offer</option>
+                                            <option value="Rejected">Rejected</option>
+                                        </select>
+                                    ) : (
+                                        <button
+                                            onClick={() => setChangingStatusId(job.id)}
+                                            className={`${getStatusBadge(job.status)} cursor-pointer hover:opacity-80 transition-opacity`}
+                                        >
+                                            {job.status.toUpperCase()}
+                                        </button>
+                                    )}
+                                </td>
+                                
+                                <td className="py-3 px-4">
+                                    {editingId === job.id ? (
+                                        <input
+                                            type="date"
+                                            value={editForm.dateApplied}
+                                            onChange={(e) => setEditForm({ ...editForm, dateApplied: e.target.value })}
+                                            className="px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-dark-muted font-mono focus:outline-none"
+                                        />
+                                    ) : (
+                                        <span className="text-sm text-dark-muted font-mono">
+                                            {new Date(job.dateApplied).toLocaleDateString()}
+                                        </span>
+                                    )}
+                                </td>
+                                
+                                <td className="py-3 px-4">
                                     {job.cvUrl ? (
                                         <a
                                             href={job.cvUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-accent-blue hover:underline"
+                                            className="text-xs text-accent-blue hover:underline font-mono"
                                         >
-                                            VIEW_CV
+                                            VIEW
                                         </a>
                                     ) : (
-                                        <span>NO_CV</span>
+                                        <span className="text-xs text-dark-muted font-mono"></span>
                                     )}
-                                </div>
-                            </div>
-
-                            <div className="flex gap-2 mt-4">
-                                <button
-                                    onClick={() => handleFileSelect(job.id)}
-                                    disabled={uploadingId === job.id}
-                                    className="flex-1 text-xs px-3 py-2 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono disabled:opacity-50"
-                                >
-                                    {uploadingId === job.id ? 'UPLOADING...' : 'UPLOAD_CV'}
-                                </button>
-                                <button
-                                    onClick={() => handleEdit(job)}
-                                    className="flex-1 text-xs px-3 py-2 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono"
-                                >
-                                    EDIT
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(job.id)}
-                                    className="flex-1 text-xs px-3 py-2 rounded bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500 transition-colors font-mono"
-                                >
-                                    DELETE
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            ))}
+                                </td>
+                                
+                                <td className="py-3 px-4">
+                                    <div className="flex items-center justify-end gap-2">
+                                        {editingId === job.id ? (
+                                            <>
+                                                <button
+                                                    onClick={() => handleSaveEdit(job.id)}
+                                                    className="text-xs px-2.5 py-1.5 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono"
+                                                >
+                                                    SAVE
+                                                </button>
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    className="text-xs px-2.5 py-1.5 rounded border border-dark-border text-dark-muted hover:text-white hover:border-white transition-colors font-mono"
+                                                >
+                                                    CANCEL
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={() => handleFileSelect(job.id)}
+                                                    disabled={uploadingId === job.id}
+                                                    className="text-xs px-2.5 py-1.5 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono disabled:opacity-50"
+                                                    title="Upload CV"
+                                                >
+                                                    {uploadingId === job.id ? '...' : 'CV'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleEdit(job)}
+                                                    className="text-xs px-2.5 py-1.5 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono"
+                                                >
+                                                    EDIT
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(job.id)}
+                                                    className="text-xs px-2.5 py-1.5 rounded bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500 transition-colors font-mono"
+                                                >
+                                                    DEL
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
