@@ -196,4 +196,20 @@ public class TaskService {
 
         return convertToDTO(task);
     }
+
+    /**
+     * Search tasks by title or description
+     */
+    public List<TaskDTO> searchTasks(String query) {
+        User currentUser = getCurrentUser();
+        List<Task> allTasks = taskRepository.findByUserOrderByPositionAsc(currentUser);
+
+        String lowerQuery = query.toLowerCase();
+        return allTasks.stream()
+                .filter(task -> (task.getTitle() != null && task.getTitle().toLowerCase().contains(lowerQuery)) ||
+                        (task.getDescription() != null && task.getDescription().toLowerCase().contains(lowerQuery)) ||
+                        (task.getStatus() != null && task.getStatus().toLowerCase().contains(lowerQuery)))
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 }
