@@ -9,10 +9,12 @@ function JobTrackerPage() {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
+    const [filteredJobs, setFilteredJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [viewMode, setViewMode] = useState('table'); // 'table' or 'cards'
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         fetchJobs();
@@ -34,12 +36,29 @@ function JobTrackerPage() {
 
             const data = await response.json();
             setJobs(data);
+            setFilteredJobs(data);
         } catch (err) {
             setError(err.message);
             console.error('Error fetching jobs:', err);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSearch = (query) => {
+        setSearchQuery(query);
+        if (!query.trim()) {
+            setFilteredJobs(jobs);
+            return;
+        }
+
+        const lowerQuery = query.toLowerCase();
+        const filtered = jobs.filter(job =>
+            job.company?.toLowerCase().includes(lowerQuery) ||
+            job.role?.toLowerCase().includes(lowerQuery) ||
+            job.status?.toLowerCase().includes(lowerQuery)
+        );
+        setFilteredJobs(filtered);
     };
 
     const handleLogout = () => {
@@ -111,10 +130,32 @@ function JobTrackerPage() {
 
                 {!loading && !error && (
                     <div className="space-y-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                        {/* Search Bar */}
+                        <div className="card">
+                            <div className="flex items-center gap-3">
+                                <span className="text-dark-muted font-mono text-sm">🔍</span>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                    placeholder="Search by company, role, or status..."
+                                    className="flex-1 bg-transparent border-none text-white font-mono text-sm focus:outline-none placeholder:text-dark-muted"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => handleSearch('')}
+                                        className="text-dark-muted hover:text-white font-mono text-sm transition-colors"
+                                    >
+                                        CLEAR
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
                         {/* Stats & Controls */}
                         <div className="flex items-center justify-between mb-6">
                             <div className="font-mono text-sm text-dark-muted">
-                                TOTAL: <span className="text-white font-medium">{jobs.length}</span> {jobs.length === 1 ? 'APPLICATION' : 'APPLICATIONS'}
+                                SHOWING: <span className="text-white font-medium">{filteredJobs.length}</span> / {jobs.length} {jobs.length === 1 ? 'APPLICATION' : 'APPLICATIONS'}
                             </div>
                             <div className="flex items-center gap-3">
                                 {/* View Toggle */}
@@ -158,7 +199,7 @@ function JobTrackerPage() {
                         </div>
 
                         {/* Job Display */}
-                        <JobTable jobs={jobs} onRefresh={fetchJobs} viewMode={viewMode} />
+                        <JobTable jobs={filteredJobs} onRefresh={fetchJobs} viewMode={viewMode} />
                     </div>
                 )}
 
