@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import KanbanBoard from '../components/KanbanBoard';
 import AddTaskModal from '../components/AddTaskModal';
-import './TaskManagerPage.css';
+import { exportTasksToCSV, exportTasksToPDF } from '../utils/exportUtils';
 
 function TaskManagerPage() {
     const { user, logout } = useContext(AuthContext);
@@ -50,72 +50,109 @@ function TaskManagerPage() {
         navigate('/dashboard');
     };
 
-    // Group tasks by status
     const todoTasks = tasks.filter(task => task.status === 'TODO');
     const inProgressTasks = tasks.filter(task => task.status === 'IN_PROGRESS');
     const doneTasks = tasks.filter(task => task.status === 'DONE');
 
     return (
-        <div className="task-manager-page">
-            <header className="task-manager-header">
-                <div className="header-content">
-                    <h1>📝 Task Manager</h1>
-                    <div className="header-actions">
-                        <button onClick={handleBackToDashboard} className="back-btn">
-                            ← Back to Dashboard
+        <div className="min-h-screen animate-fade-in">
+            {/* Header */}
+            <header className="border-b border-dark-border bg-dark-bg/80 backdrop-blur-sm sticky top-0 z-10">
+                <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={handleBackToDashboard}
+                            className="text-dark-muted hover:text-white font-mono text-sm transition-colors"
+                        >
+                            ← BACK
                         </button>
-                        <span className="user-email">{user?.email}</span>
-                        <button onClick={handleLogout} className="logout-btn">
-                            Logout
+                        <div className="h-4 w-px bg-dark-border"></div>
+                        <h1 className="text-lg font-medium text-white font-mono">TASK_MANAGER</h1>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        <div className="text-sm text-dark-muted font-mono">
+                            <span className="text-dark-text">{user?.username}</span>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-4 py-1.5 rounded"
+                        >
+                            LOGOUT
                         </button>
                     </div>
                 </div>
             </header>
 
-            <main className="task-manager-main">
-                <div className="container">
-                    <div className="page-intro">
-                        <h2>Organize Your Tasks</h2>
-                        <p>Manage your tasks with a Trello-style board</p>
-                        <button onClick={() => setShowAddModal(true)} className="add-task-btn">
-                            + Add New Task
+            {/* Main Content */}
+            <main className="max-w-7xl mx-auto px-6 py-12">
+                {/* Page Header */}
+                <div className="flex items-center justify-between mb-8 animate-slide-up">
+                    <div>
+                        <h2 className="text-2xl font-medium text-white mb-2 font-mono">
+                            Organize Tasks
+                        </h2>
+                        <p className="text-dark-muted font-mono text-sm">
+                            Kanban-style task management
+                        </p>
+                    </div>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => exportTasksToCSV(tasks)}
+                            disabled={tasks.length === 0}
+                            className="text-xs px-3 py-1.5 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono disabled:opacity-30"
+                        >
+                            EXPORT_CSV
+                        </button>
+                        <button
+                            onClick={() => exportTasksToPDF(tasks)}
+                            disabled={tasks.length === 0}
+                            className="text-xs px-3 py-1.5 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono disabled:opacity-30"
+                        >
+                            EXPORT_PDF
+                        </button>
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="btn-primary"
+                        >
+                            ADD_TASK
                         </button>
                     </div>
+                </div>
 
-                    {loading && (
-                        <div className="loading-state">
-                            <div className="spinner"></div>
-                            <p>Loading your tasks...</p>
-                        </div>
-                    )}
+                {loading && (
+                    <div className="flex flex-col items-center justify-center py-20 animate-slide-up">
+                        <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-dark-muted font-mono text-sm">Loading tasks...</p>
+                    </div>
+                )}
 
-                    {error && (
-                        <div className="error-message">
-                            <p>⚠️ {error}</p>
-                            <button onClick={fetchTasks} className="retry-btn">
-                                Try Again
-                            </button>
-                        </div>
-                    )}
+                {error && (
+                    <div className="card bg-red-500/5 border-red-500/20 animate-slide-up">
+                        <p className="text-red-400 font-mono text-sm mb-4">{error}</p>
+                        <button onClick={fetchTasks} className="btn-primary">
+                            RETRY
+                        </button>
+                    </div>
+                )}
 
-                    {!loading && !error && (
-                        <>
-                            <KanbanBoard
-                                tasks={tasks}
-                                onTaskUpdate={fetchTasks}
-                                onTaskDelete={fetchTasks}
-                            />
+                {!loading && !error && (
+                    <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                        <KanbanBoard
+                            tasks={tasks}
+                            onTaskUpdate={fetchTasks}
+                            onTaskDelete={fetchTasks}
+                        />
 
-                            <AddTaskModal
-                                isOpen={showAddModal}
-                                onClose={() => setShowAddModal(false)}
-                                onTaskAdded={fetchTasks}
-                            />
-                        </>
-                    )}
-                </div >
-            </main >
-        </div >
+                        <AddTaskModal
+                            isOpen={showAddModal}
+                            onClose={() => setShowAddModal(false)}
+                            onTaskAdded={fetchTasks}
+                        />
+                    </div>
+                )}
+            </main>
+        </div>
     );
 }
 
