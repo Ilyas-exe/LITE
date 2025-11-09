@@ -156,7 +156,34 @@ function TaskManagerPage() {
                 )}
 
                 {!loading && !error && (
-                    <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                    <div className="space-y-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                        {/* Search Bar */}
+                        <div className="card">
+                            <div className="flex items-center gap-3">
+                                <span className="text-dark-muted font-mono text-xs font-bold">SEARCH</span>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                    placeholder="Search by title, description, or status..."
+                                    className="flex-1 bg-transparent border-none text-white font-mono text-sm focus:outline-none placeholder:text-dark-muted"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => handleSearch('')}
+                                        className="text-dark-muted hover:text-white font-mono text-sm transition-colors"
+                                    >
+                                        CLEAR
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="font-mono text-sm text-dark-muted">
+                            SHOWING: <span className="text-white font-medium">{filteredTasks.length}</span> / {tasks.length} {tasks.length === 1 ? 'TASK' : 'TASKS'}
+                        </div>
+
                         <KanbanBoard
                             tasks={tasks}
                             onTaskUpdate={fetchTasks}
