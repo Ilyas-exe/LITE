@@ -337,6 +337,44 @@ public class KnowledgeBaseController {
         return ResponseEntity.noContent().build();
     }
 
+    // PUT /api/kb/documents/{id} - Update document folder (move document)
+    @PutMapping("/documents/{id}")
+    public ResponseEntity<DocumentTreeDTO> updateDocument(
+            @PathVariable Long id,
+            @RequestBody Map<String, Long> body,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Document document = documentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Document not found"));
+
+        if (!document.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // Update folder association (allow moving between folders)
+        Long folderId = body.get("folderId");
+        if (folderId != null) {
+            Folder folder = folderRepository.findById(folderId)
+                    .orElseThrow(() -> new RuntimeException("Folder not found"));
+            if (!folder.getUser().getId().equals(user.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            document.setFolder(folder);
+        } else {
+            // Allow moving to root (no folder)
+            document.setFolder(null);
+        }
+
+        Document savedDocument = documentRepository.save(document);
+
+        DocumentTreeDTO responseDto = new DocumentTreeDTO();
+        responseDto.setId(savedDocument.getId());
+        responseDto.setFileName(savedDocument.getFileName());
+        responseDto.setDocumentUrl(savedDocument.getDocumentUrl());
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     // DELETE /api/kb/documents/{id} - Delete a document
     @DeleteMapping("/documents/{id}")
     public ResponseEntity<Void> deleteDocument(
