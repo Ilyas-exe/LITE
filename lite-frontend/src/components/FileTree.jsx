@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import './FileTree.css';
 
 function FileTree({ tree, onItemClick, onRefresh }) {
@@ -218,6 +218,17 @@ function FileTree({ tree, onItemClick, onRefresh }) {
         }
     };
 
+    // Recursive helper to render folder options in select dropdown
+    const renderFolderSelectOptions = (folder, depth = 0) => {
+        const indent = '　'.repeat(depth); // Using full-width space for indentation
+        return (
+            <React.Fragment key={folder.id}>
+                <option value={folder.id}>{indent}📁 {folder.name}</option>
+                {folder.subFolders?.map(subFolder => renderFolderSelectOptions(subFolder, depth + 1))}
+            </React.Fragment>
+        );
+    };
+
     // Recursive helper to render folder options in the move modal
     const renderFolderOptions = (folder, depth = 0) => {
         return (
@@ -234,9 +245,11 @@ function FileTree({ tree, onItemClick, onRefresh }) {
         );
     };
 
-    const renderFolder = (folder, depth = 0) => {
+    const renderFolder = (folder, depth = 0, parentPath = []) => {
         const isExpanded = expandedFolders.has(folder.id);
         const isActive = activeFolder === folder.id;
+        const currentPath = [...parentPath, { id: folder.id, name: folder.name }];
+        const itemCount = (folder.notes?.length || 0) + (folder.documents?.length || 0) + (folder.subFolders?.length || 0);
 
         return (
             <div key={folder.id} className="tree-folder" style={{ marginLeft: `${depth * 20}px` }}>
@@ -249,6 +262,7 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                         className="folder-toggle"
                     >
                         {isExpanded ? '📂' : '📁'} {folder.name}
+                        {itemCount > 0 && <span className="item-count">{itemCount}</span>}
                     </span>
                     <button
                         onClick={() => handleDelete(folder.id, 'folder')}
@@ -260,10 +274,10 @@ function FileTree({ tree, onItemClick, onRefresh }) {
 
                 {isExpanded && (
                     <div className="tree-children">
-                        {folder.subFolders?.map(subFolder => renderFolder(subFolder, depth + 1))}
+                        {folder.subFolders?.map(subFolder => renderFolder(subFolder, depth + 1, currentPath))}
                         {folder.notes?.map(note => (
                             <div key={note.id} className="tree-item note-item" style={{ marginLeft: `${(depth + 1) * 20}px` }}>
-                                <span onClick={() => onItemClick(note, 'note')}>
+                                <span onClick={() => onItemClick(note, 'note', currentPath)}>
                                     📝 {note.title}
                                 </span>
                                 <div className="item-actions">
@@ -288,7 +302,7 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                         ))}
                         {folder.documents?.map(doc => (
                             <div key={doc.id} className="tree-item doc-item" style={{ marginLeft: `${(depth + 1) * 20}px` }}>
-                                <span onClick={() => onItemClick(doc, 'document')}>
+                                <span onClick={() => onItemClick(doc, 'document', currentPath)}>
                                     📄 {doc.fileName}
                                 </span>
                                 <div className="item-actions">
@@ -307,11 +321,37 @@ function FileTree({ tree, onItemClick, onRefresh }) {
         );
     };
 
+    const expandAll = () => {
+        const allFolderIds = new Set();
+        const collectFolderIds = (folders) => {
+            folders.forEach(folder => {
+                allFolderIds.add(folder.id);
+                if (folder.subFolders?.length) {
+                    collectFolderIds(folder.subFolders);
+                }
+            });
+        };
+        if (tree.subFolders) {
+            collectFolderIds(tree.subFolders);
+        }
+        setExpandedFolders(allFolderIds);
+    };
+
+    const collapseAll = () => {
+        setExpandedFolders(new Set());
+    };
+
     return (
         <div className="file-tree">
             <div className="tree-header">
                 <h3>Files</h3>
                 <div className="tree-actions">
+                    <button onClick={expandAll} className="btn-tree-action-small" title="Expand All">
+                        ⊞
+                    </button>
+                    <button onClick={collapseAll} className="btn-tree-action-small" title="Collapse All">
+                        ⊟
+                    </button>
                     <button onClick={() => setShowNewFolderModal(true)} className="btn-tree-action" title="New Folder">
                         📁+
                     </button>
@@ -390,6 +430,16 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                             placeholder="Folder name"
                             autoFocus
                         />
+                        <div className="folder-parent-select">
+                            <label>Create in:</label>
+                            <select
+                                value={selectedFolderId || ''}
+                                onChange={(e) => setSelectedFolderId(e.target.value ? Number(e.target.value) : null)}
+                            >
+                                <option value="">📁 Root (Top Level)</option>
+                                {tree.subFolders?.map(folder => renderFolderSelectOptions(folder))}
+                            </select>
+                        </div>
                         <div className="modal-actions">
                             <button onClick={() => setShowNewFolderModal(false)}>Cancel</button>
                             <button onClick={handleCreateFolder}>Create</button>
