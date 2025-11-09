@@ -266,3 +266,172 @@ export const exportTasksToPDF = async (tasks) => {
         printWindow.print();
     }, 500);
 };
+
+// ============================================
+// BACKUP & RESTORE FUNCTIONS
+// ============================================
+
+export const exportFullBackup = async () => {
+    const token = localStorage.getItem('token');
+
+    try {
+        // Fetch all data
+        const [jobsRes, tasksRes, kbRes] = await Promise.all([
+            fetch('http://localhost:8080/api/jobs', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('http://localhost:8080/api/tasks', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('http://localhost:8080/api/kb/tree', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+        ]);
+
+        const jobs = jobsRes.ok ? await jobsRes.json() : [];
+        const tasks = tasksRes.ok ? await tasksRes.json() : [];
+        const kb = kbRes.ok ? await kbRes.json() : {};
+
+        // Create backup object
+        const backup = {
+            exportDate: new Date().toISOString(),
+            version: '1.0',
+            data: {
+                jobs,
+                tasks,
+                knowledgeBase: kb
+            }
+        };
+
+        // Download as JSON
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `LITE_backup_${new Date().toISOString().split('T')[0]}.json`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        return { success: true, message: 'Backup created successfully!' };
+    } catch (error) {
+        console.error('Backup error:', error);
+        return { success: false, message: 'Failed to create backup' };
+    }
+};
+
+export const importBackup = (file, onSuccess, onError) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        try {
+            const backup = JSON.parse(e.target.result);
+
+            // Validate backup structure
+            if (!backup.data || !backup.version) {
+                throw new Error('Invalid backup file format');
+            }
+
+            onSuccess(backup);
+        } catch (error) {
+            console.error('Import error:', error);
+            onError(error.message);
+        }
+    };
+
+    reader.onerror = () => {
+        onError('Failed to read file');
+    };
+
+    reader.readAsText(file);
+};
+
+// ============================================
+// NOTE EXPORT FUNCTIONS
+// ============================================
+
+export const exportNoteToMarkdown = (note) => {
+    const content = `# ${note.title}\n\n${note.content || ''}`;
+
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${note.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
+export const exportNoteToPDF = (note) => {
+    const content = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>${note.title}</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+                
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'JetBrains Mono', monospace;
+                    padding: 40px;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    background: #0a0a0a;
+                    color: #e5e5e5;
+                    line-height: 1.6;
+                }
+                h1 {
+                    font-size: 32px;
+                    margin-bottom: 20px;
+                    color: #3b82f6;
+                    border-bottom: 2px solid #1f1f1f;
+                    padding-bottom: 10px;
+                }
+                .content {
+                    font-size: 14px;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                }
+                .footer {
+                    margin-top: 40px;
+                    padding-top: 20px;
+                    border-top: 1px solid #1f1f1f;
+                    font-size: 10px;
+                    color: #737373;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>${note.title}</h1>
+            <div class="content">${note.content || 'No content'}</div>
+            <div class="footer">
+                Exported from LITE Knowledge Base • ${new Date().toLocaleDateString()}
+            </div>
+        </body>
+        </html>
+    `;
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    printWindow.document.write(content);
+    printWindow.document.close();
+    printWindow.focus();
+
+    setTimeout(() => {
+        printWindow.print();
+    }, 500);
+};
+
+export const exportAllNotesToZip = async (notes) => {
+    // For now, export as individual markdown files
+    // In production, you'd use JSZip library
+    notes.forEach((note, index) => {
+        setTimeout(() => {
+            exportNoteToMarkdown(note);
+        }, index * 200); // Stagger downloads
+    });
+};
