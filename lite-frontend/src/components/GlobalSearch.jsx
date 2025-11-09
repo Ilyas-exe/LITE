@@ -20,49 +20,33 @@ function GlobalSearch({ isOpen, onClose }) {
         try {
             const token = localStorage.getItem('token');
 
-            // Search Jobs
-            const jobsRes = await fetch('http://localhost:8080/api/jobs', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            // Search using new efficient endpoints
+            const [jobsRes, tasksRes, kbRes] = await Promise.all([
+                fetch(`http://localhost:8080/api/jobs/search?q=${encodeURIComponent(query)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(`http://localhost:8080/api/tasks/search?q=${encodeURIComponent(query)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(`http://localhost:8080/api/kb/search?q=${encodeURIComponent(query)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+            ]);
+
             const jobs = jobsRes.ok ? await jobsRes.json() : [];
-
-            // Search Tasks
-            const tasksRes = await fetch('http://localhost:8080/api/tasks', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
             const tasks = tasksRes.ok ? await tasksRes.json() : [];
-
-            // Search Knowledge Base
-            const kbRes = await fetch('http://localhost:8080/api/kb/tree', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
             const kbData = kbRes.ok ? await kbRes.json() : { notes: [], documents: [] };
 
-            // Filter results
-            const lowerQuery = query.toLowerCase();
-            const filteredJobs = jobs.filter(job =>
-                job.company?.toLowerCase().includes(lowerQuery) ||
-                job.role?.toLowerCase().includes(lowerQuery)
-            );
-            const filteredTasks = tasks.filter(task =>
-                task.title?.toLowerCase().includes(lowerQuery) ||
-                task.description?.toLowerCase().includes(lowerQuery)
-            );
-
-            // Combine notes and documents for KB search
+            // Combine notes and documents
             const allKBItems = [
-                ...(kbData.notes?.map(note => ({ ...note, type: 'note' })) || []),
-                ...(kbData.documents?.map(doc => ({ ...doc, type: 'document' })) || [])
+                ...(kbData.notes || []),
+                ...(kbData.documents || [])
             ];
-            const filteredKB = allKBItems.filter(item =>
-                item.title?.toLowerCase().includes(lowerQuery) ||
-                item.fileName?.toLowerCase().includes(lowerQuery)
-            );
 
             setResults({
-                jobs: filteredJobs.slice(0, 5),
-                tasks: filteredTasks.slice(0, 5),
-                notes: filteredKB.slice(0, 5)
+                jobs: jobs.slice(0, 5),
+                tasks: tasks.slice(0, 5),
+                notes: allKBItems.slice(0, 5)
             });
         } catch (error) {
             console.error('Search error:', error);
@@ -196,8 +180,10 @@ function GlobalSearch({ isOpen, onClose }) {
                                                     onClick={() => handleNoteClick(item)}
                                                     className="w-full text-left p-3 rounded border border-dark-border hover:border-accent-blue transition-colors"
                                                 >
-                                                    <div className="flex items-center gap-2">
-                                                        <span>{item.type === 'document' ? '📄' : '📝'}</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[10px] font-mono text-dark-muted">
+                                                            {item.type === 'document' ? 'DOC' : 'MD'}
+                                                        </span>
                                                         <p className="text-white font-mono text-sm font-medium">
                                                             {item.title || item.fileName}
                                                         </p>
