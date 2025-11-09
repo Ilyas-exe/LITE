@@ -1,7 +1,6 @@
 import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import './AuthPages.css';
 
 const RegisterPage = () => {
     const [name, setName] = useState('');
@@ -35,7 +34,7 @@ const RegisterPage = () => {
         const result = await register(name, email, password);
 
         if (result.success) {
-            navigate('/'); // Redirect to dashboard
+            navigate('/');
         } else {
             setError(result.error);
         }
@@ -44,42 +43,65 @@ const RegisterPage = () => {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <h1>Create Account</h1>
-                <p className="auth-subtitle">Join LITE and boost your productivity</p>
+        <div className="min-h-screen flex items-center justify-center p-6 animate-fade-in">
+            {/* Register Container */}
+            <div className="w-full max-w-md">
+                {/* Header */}
+                <div className="mb-12 animate-slide-up">
+                    <h1 className="text-2xl font-medium text-white mb-2 font-mono">
+                        Create Account
+                    </h1>
+                    <p className="text-sm text-dark-muted font-mono">
+                        Join LITE and boost your productivity
+                    </p>
+                </div>
 
-                <form onSubmit={handleSubmit} className="auth-form">
-                    {error && <div className="error-message">{error}</div>}
+                {/* Register Form */}
+                <form onSubmit={handleSubmit} className="space-y-5 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                    {error && (
+                        <div className="bg-red-500/5 border border-red-500/20 text-red-400 px-4 py-3 rounded-md text-sm font-mono">
+                            {error}
+                        </div>
+                    )}
 
-                    <div className="form-group">
-                        <label htmlFor="name">Full Name</label>
+                    <div className="space-y-2">
+                        <label htmlFor="name" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Full Name
+                        </label>
                         <input
                             type="text"
                             id="name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
-                            placeholder="Enter your full name"
+                            placeholder="John Doe"
                             disabled={loading}
+                            className="input-field"
+                            autoComplete="name"
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="email">Email</label>
+                    <div className="space-y-2">
+                        <label htmlFor="email" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Email Address
+                        </label>
                         <input
                             type="email"
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            placeholder="Enter your email"
+                            placeholder="you@example.com"
                             disabled={loading}
+                            className="input-field"
+                            autoComplete="email"
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
+                    <div className="space-y-2">
+                        <label htmlFor="password" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Password
+                        </label>
                         <input
                             type="password"
                             id="password"
@@ -88,11 +110,15 @@ const RegisterPage = () => {
                             required
                             placeholder="At least 6 characters"
                             disabled={loading}
+                            className="input-field"
+                            autoComplete="new-password"
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="confirmPassword">Confirm Password</label>
+                    <div className="space-y-2">
+                        <label htmlFor="confirmPassword" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Confirm Password
+                        </label>
                         <input
                             type="password"
                             id="confirmPassword"
@@ -101,17 +127,32 @@ const RegisterPage = () => {
                             required
                             placeholder="Re-enter your password"
                             disabled={loading}
+                            className="input-field"
+                            autoComplete="new-password"
                         />
                     </div>
 
-                    <button type="submit" className="btn-primary" disabled={loading}>
-                        {loading ? 'Creating account...' : 'Register'}
+                    <button
+                        type="submit"
+                        className="btn-primary w-full mt-8"
+                        disabled={loading}
+                    >
+                        {loading ? 'Creating Account...' : 'Register'}
                     </button>
                 </form>
 
-                <p className="auth-footer">
-                    Already have an account? <Link to="/login">Login here</Link>
-                </p>
+                {/* Footer */}
+                <div className="mt-8 text-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                    <p className="text-sm text-dark-muted font-mono">
+                        Already have an account?{' '}
+                        <Link
+                            to="/login"
+                            className="text-accent-blue hover:underline transition-all font-medium font-mono"
+                        >
+                            Login here
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     );
