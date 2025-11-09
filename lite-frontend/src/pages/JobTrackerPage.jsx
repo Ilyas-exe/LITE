@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import JobTable from '../components/JobTable';
 import AddJobForm from '../components/AddJobForm';
+import { exportJobsToCSV, exportJobsToPDF } from '../utils/exportUtils';
 
 function JobTrackerPage() {
     const { user, logout } = useContext(AuthContext);
@@ -10,6 +11,8 @@ function JobTrackerPage() {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [viewMode, setViewMode] = useState('table'); // 'table' or 'cards'
 
     useEffect(() => {
         fetchJobs();
@@ -108,18 +111,72 @@ function JobTrackerPage() {
 
                 {!loading && !error && (
                     <div className="space-y-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                        {/* Stats */}
+                        {/* Stats & Controls */}
                         <div className="flex items-center justify-between mb-6">
                             <div className="font-mono text-sm text-dark-muted">
                                 TOTAL: <span className="text-white font-medium">{jobs.length}</span> {jobs.length === 1 ? 'APPLICATION' : 'APPLICATIONS'}
                             </div>
+                            <div className="flex items-center gap-3">
+                                {/* View Toggle */}
+                                <div className="flex items-center gap-1 border border-dark-border rounded overflow-hidden">
+                                    <button
+                                        onClick={() => setViewMode('table')}
+                                        className={`text-xs px-3 py-1.5 font-mono transition-colors ${viewMode === 'table'
+                                                ? 'bg-accent-blue text-black'
+                                                : 'text-dark-muted hover:text-white'
+                                            }`}
+                                    >
+                                        TABLE
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('cards')}
+                                        className={`text-xs px-3 py-1.5 font-mono transition-colors ${viewMode === 'cards'
+                                                ? 'bg-accent-blue text-black'
+                                                : 'text-dark-muted hover:text-white'
+                                            }`}
+                                    >
+                                        CARDS
+                                    </button>
+                                </div>
+
+                                {/* Export Buttons */}
+                                <button
+                                    onClick={() => exportJobsToCSV(jobs)}
+                                    disabled={jobs.length === 0}
+                                    className="text-xs px-3 py-1.5 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono disabled:opacity-30"
+                                >
+                                    EXPORT_CSV
+                                </button>
+                                <button
+                                    onClick={() => exportJobsToPDF(jobs)}
+                                    disabled={jobs.length === 0}
+                                    className="text-xs px-3 py-1.5 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono disabled:opacity-30"
+                                >
+                                    EXPORT_PDF
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Add Job Form */}
-                        <AddJobForm onJobAdded={fetchJobs} />
+                        {/* Job Display */}
+                        <JobTable jobs={jobs} onRefresh={fetchJobs} viewMode={viewMode} />
+                    </div>
+                )}
 
-                        {/* Job Table */}
-                        <JobTable jobs={jobs} onRefresh={fetchJobs} />
+                {/* Floating Add Button */}
+                <button
+                    onClick={() => setShowAddModal(true)}
+                    className="fixed bottom-8 right-8 w-14 h-14 bg-accent-blue hover:bg-accent-blue/80 text-black rounded-full flex items-center justify-center text-2xl shadow-lg shadow-accent-blue/20 transition-all hover:scale-110 z-50 font-mono"
+                    title="Add Job Application"
+                >
+                    +
+                </button>
+
+                {/* Add Job Modal */}
+                {showAddModal && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={() => setShowAddModal(false)}>
+                        <div className="bg-dark-card border border-dark-border rounded-lg p-6 max-w-2xl w-full mx-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                            <AddJobForm onJobAdded={() => { fetchJobs(); setShowAddModal(false); }} onCancel={() => setShowAddModal(false)} />
+                        </div>
                     </div>
                 )}
             </main>
