@@ -561,48 +561,17 @@ function Viewer({ item, type, onRefresh, allNotes = [], onNavigateToNote }) {
                 </div>
 
                 {/* PDF Viewer */}
-                <div className="bg-dark-card border border-dark-border rounded-lg p-4">
+                <div className="bg-dark-card border border-dark-border rounded-lg overflow-hidden">
                     {item.fileName.toLowerCase().endsWith('.pdf') ? (
-                        <div className="flex flex-col items-center gap-4">
-                            <Document
-                                file={item.documentUrl}
-                                onLoadSuccess={onDocumentLoadSuccess}
-                                loading={
-                                    <div className="flex flex-col items-center justify-center py-20">
-                                        <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin mb-4"></div>
-                                        <p className="text-dark-muted font-mono text-sm">Loading PDF...</p>
-                                    </div>
-                                }
-                                error={
-                                    <div className="flex flex-col items-center justify-center py-20">
-                                        <p className="text-red-400 font-mono text-sm mb-4">Failed to load PDF</p>
-                                        <a
-                                            href={item.documentUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="px-4 py-2 rounded bg-accent-blue text-black hover:bg-accent-blue/80 transition-colors font-mono text-sm"
-                                        >
-                                            Open in New Tab
-                                        </a>
-                                    </div>
-                                }
-                            >
-                                {Array.from(new Array(numPages), (el, index) => (
-                                    <div key={`page_${index + 1}`} className="mb-4 shadow-lg">
-                                        <Page
-                                            pageNumber={index + 1}
-                                            width={Math.min(800, window.innerWidth - 100)}
-                                            renderTextLayer={false}
-                                            renderAnnotationLayer={false}
-                                        />
-                                    </div>
-                                ))}
-                            </Document>
-                            {numPages && (
-                                <div className="text-sm text-dark-muted font-mono">
-                                    Total Pages: {numPages}
-                                </div>
-                            )}
+                        <div className="w-full" style={{ height: '800px' }}>
+                            <iframe
+                                src={item.documentUrl}
+                                className="w-full h-full border-0"
+                                title={item.fileName}
+                                onError={() => {
+                                    console.error('Failed to load PDF in iframe');
+                                }}
+                            />
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-20">
