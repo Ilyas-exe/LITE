@@ -1,10 +1,62 @@
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import GlobalSearch from '../components/GlobalSearch';
 
 const Dashboard = () => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [stats, setStats] = useState({ jobs: 0, tasks: 0, kb: 0 });
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                setSearchOpen(true);
+            }
+            if (e.key === 'Escape') {
+                setSearchOpen(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            const token = localStorage.getItem('token');
+
+            const [jobsRes, tasksRes, kbRes] = await Promise.all([
+                fetch('http://localhost:8080/api/jobs', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch('http://localhost:8080/api/tasks', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch('http://localhost:8080/api/kb/tree', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+            ]);
+
+            const jobs = jobsRes.ok ? await jobsRes.json() : [];
+            const tasks = tasksRes.ok ? await tasksRes.json() : [];
+            const kbData = kbRes.ok ? await kbRes.json() : { notes: [], documents: [] };
+
+            setStats({
+                jobs: jobs.length,
+                tasks: tasks.filter(t => t.status !== 'DONE').length,
+                kb: (kbData.notes?.length || 0) + (kbData.documents?.length || 0)
+            });
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+        }
+    };
 
     const handleLogout = () => {
         logout();
@@ -16,19 +68,25 @@ const Dashboard = () => {
             title: 'JOB_TRACKER',
             description: 'Track applications and career progress',
             path: '/job-tracker',
-            stats: '0 Active'
+            stats: `${stats.jobs} ${stats.jobs === 1 ? 'Application' : 'Applications'}`
         },
         {
             title: 'TASK_MANAGER',
             description: 'Organize tasks with Kanban board',
             path: '/task-manager',
-            stats: '0 Pending'
+            stats: `${stats.tasks} Pending`
         },
         {
             title: 'KNOWLEDGE_BASE',
             description: 'Store notes and documentation',
             path: '/knowledge-base',
-            stats: '0 Documents'
+            stats: `${stats.kb} Items`
+        },
+        {
+            title: 'ANALYTICS',
+            description: 'View productivity metrics and stats',
+            path: '/analytics',
+            stats: 'Dashboard'
         }
     ];
 
@@ -45,6 +103,13 @@ const Dashboard = () => {
                     </div>
 
                     <div className="flex items-center gap-6">
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            className="flex items-center gap-2 text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-4 py-1.5 rounded"
+                        >
+                            SEARCH
+                            <span className="text-xs">⌘K</span>
+                        </button>
                         <div className="text-sm text-dark-muted font-mono">
                             <span className="text-dark-text">{user?.username || 'User'}</span>
                         </div>
@@ -71,7 +136,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Modules Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
                     {modules.map((module, index) => (
                         <div
                             key={index}
@@ -115,6 +180,9 @@ const Dashboard = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Global Search Modal */}
+            <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
         </div>
     );
 };
