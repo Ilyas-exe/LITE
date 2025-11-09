@@ -36,9 +36,11 @@ public class JobApplicationService {
         return new JobApplicationDTO(
                 jobApplication.getId(),
                 jobApplication.getCompany(),
-                jobApplication.getRole(),
+                jobApplication.getWayOfApplying(),
+                jobApplication.getContact(),
                 jobApplication.getStatus(),
                 jobApplication.getDateApplied(),
+                jobApplication.getJobDescription(),
                 jobApplication.getCvUrl());
     }
 
@@ -77,9 +79,11 @@ public class JobApplicationService {
 
         JobApplication jobApplication = new JobApplication();
         jobApplication.setCompany(dto.getCompany());
-        jobApplication.setRole(dto.getRole());
+        jobApplication.setWayOfApplying(dto.getWayOfApplying());
+        jobApplication.setContact(dto.getContact());
         jobApplication.setStatus(dto.getStatus());
         jobApplication.setDateApplied(dto.getDateApplied());
+        jobApplication.setJobDescription(dto.getJobDescription());
         jobApplication.setUser(currentUser);
 
         JobApplication saved = jobApplicationRepository.save(jobApplication);
@@ -100,9 +104,11 @@ public class JobApplicationService {
         }
 
         jobApplication.setCompany(dto.getCompany());
-        jobApplication.setRole(dto.getRole());
+        jobApplication.setWayOfApplying(dto.getWayOfApplying());
+        jobApplication.setContact(dto.getContact());
         jobApplication.setStatus(dto.getStatus());
         jobApplication.setDateApplied(dto.getDateApplied());
+        jobApplication.setJobDescription(dto.getJobDescription());
 
         JobApplication updated = jobApplicationRepository.save(jobApplication);
         return convertToDTO(updated);
