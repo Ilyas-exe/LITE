@@ -132,4 +132,17 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    /**
+     * GET /api/tasks/search?q={query} - Search tasks
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<TaskDTO>> searchTasks(@RequestParam String q) {
+        try {
+            List<TaskDTO> results = taskService.searchTasks(q);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

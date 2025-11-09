@@ -9,9 +9,11 @@ function TaskManagerPage() {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [tasks, setTasks] = useState([]);
+    const [filteredTasks, setFilteredTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         fetchTasks();
