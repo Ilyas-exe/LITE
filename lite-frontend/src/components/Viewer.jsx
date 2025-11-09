@@ -533,88 +533,101 @@ function Viewer({ item, type, onRefresh, allNotes = [], onNavigateToNote }) {
 
     if (type === 'document' && item) {
         return (
-            <div className="viewer-container">
-                {item.folderPath && item.folderPath.length > 0 && (
-                    <div className="breadcrumb">
-                        <span className="breadcrumb-item">📁 Root</span>
-                        {item.folderPath.map((folder, index) => (
-                            <span key={folder.id} className="breadcrumb-item">
-                                <span className="breadcrumb-separator">›</span>
-                                {folder.name}
-                            </span>
-                        ))}
-                    </div>
-                )}
-                <div className="viewer-header">
-                    <h2>📄 {item.fileName}</h2>
-                    <div className="viewer-actions">
-                        <a href={item.documentUrl} target="_blank" rel="noopener noreferrer" className="btn-open-external">
-                            Open in New Tab
+            <div className="space-y-6">
+                {/* Document Header - Same style as Note */}
+                <div className="flex items-center justify-between pb-4 border-b border-dark-border">
+                    <h1 className="text-2xl font-medium text-white font-mono truncate flex-1 mr-4">
+                        📄 {item.fileName}
+                    </h1>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href={item.documentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-2 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono text-xs"
+                            title="Open in New Tab"
+                        >
+                            OPEN
                         </a>
-                        <button onClick={() => setShowMoveModal(true)} className="btn-move">
-                            Move
-                        </button>
-                        <button onClick={handleDeleteDocument} className="btn-delete">
-                            Delete
-                        </button>
+                        <a
+                            href={item.documentUrl}
+                            download
+                            className="px-3 py-2 rounded border border-dark-border text-dark-muted hover:text-accent-green hover:border-accent-green transition-colors font-mono text-xs"
+                            title="Download"
+                        >
+                            DOWNLOAD
+                        </a>
                     </div>
                 </div>
 
-                <div className="pdf-container">
+                {/* PDF Viewer */}
+                <div className="bg-dark-card border border-dark-border rounded-lg p-4">
                     {item.fileName.toLowerCase().endsWith('.pdf') ? (
-                        <Document
-                            file={item.documentUrl}
-                            onLoadSuccess={onDocumentLoadSuccess}
-                            className="pdf-document"
-                        >
-                            {Array.from(new Array(numPages), (el, index) => (
-                                <Page
-                                    key={`page_${index + 1}`}
-                                    pageNumber={index + 1}
-                                    width={800}
-                                    className="pdf-page"
-                                />
-                            ))}
-                        </Document>
+                        <div className="flex flex-col items-center gap-4">
+                            <Document
+                                file={item.documentUrl}
+                                onLoadSuccess={onDocumentLoadSuccess}
+                                loading={
+                                    <div className="flex flex-col items-center justify-center py-20">
+                                        <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin mb-4"></div>
+                                        <p className="text-dark-muted font-mono text-sm">Loading PDF...</p>
+                                    </div>
+                                }
+                                error={
+                                    <div className="flex flex-col items-center justify-center py-20">
+                                        <p className="text-red-400 font-mono text-sm mb-4">Failed to load PDF</p>
+                                        <a
+                                            href={item.documentUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="px-4 py-2 rounded bg-accent-blue text-black hover:bg-accent-blue/80 transition-colors font-mono text-sm"
+                                        >
+                                            Open in New Tab
+                                        </a>
+                                    </div>
+                                }
+                            >
+                                {Array.from(new Array(numPages), (el, index) => (
+                                    <div key={`page_${index + 1}`} className="mb-4 shadow-lg">
+                                        <Page
+                                            pageNumber={index + 1}
+                                            width={Math.min(800, window.innerWidth - 100)}
+                                            renderTextLayer={false}
+                                            renderAnnotationLayer={false}
+                                        />
+                                    </div>
+                                ))}
+                            </Document>
+                            {numPages && (
+                                <div className="text-sm text-dark-muted font-mono">
+                                    Total Pages: {numPages}
+                                </div>
+                            )}
+                        </div>
                     ) : (
-                        <div className="non-pdf-viewer">
-                            <p>This file type cannot be previewed.</p>
-                            <a href={item.documentUrl} target="_blank" rel="noopener noreferrer" className="btn-download">
-                                Download File
-                            </a>
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <div className="text-6xl mb-4">📄</div>
+                            <p className="text-dark-muted font-mono text-sm mb-6">This file type cannot be previewed</p>
+                            <div className="flex gap-3">
+                                <a
+                                    href={item.documentUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-4 py-2 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono text-sm"
+                                >
+                                    Open in New Tab
+                                </a>
+                                <a
+                                    href={item.documentUrl}
+                                    download
+                                    className="px-4 py-2 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono text-sm"
+                                >
+                                    Download File
+                                </a>
+                            </div>
                         </div>
                     )}
                 </div>
-
-                {showMoveModal && (
-                    <div className="modal-overlay" onClick={() => setShowMoveModal(false)}>
-                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <h3>Move Document</h3>
-                            <p>Select destination folder for <strong>{item.fileName}</strong>:</p>
-                            <div className="folder-list">
-                                <div
-                                    className="folder-item"
-                                    onClick={() => handleMoveDocument(null)}
-                                >
-                                    📁 Root
-                                </div>
-                                {folders.map(folder => (
-                                    <div
-                                        key={folder.id}
-                                        className="folder-item"
-                                        style={{ paddingLeft: `${folder.depth * 20 + 10}px` }}
-                                        onClick={() => handleMoveDocument(folder.id)}
-                                    >
-                                        📁 {folder.name}
-                                    </div>
-                                ))}
-                            </div>
-                            <button onClick={() => setShowMoveModal(false)} className="btn-cancel">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                )}
             </div>
         );
     }
