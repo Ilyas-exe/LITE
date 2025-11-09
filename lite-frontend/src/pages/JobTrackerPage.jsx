@@ -122,8 +122,8 @@ function JobTrackerPage() {
                                     <button
                                         onClick={() => setViewMode('table')}
                                         className={`text-xs px-3 py-1.5 font-mono transition-colors ${viewMode === 'table'
-                                                ? 'bg-accent-blue text-black'
-                                                : 'text-dark-muted hover:text-white'
+                                            ? 'bg-accent-blue text-black'
+                                            : 'text-dark-muted hover:text-white'
                                             }`}
                                     >
                                         TABLE
@@ -131,8 +131,8 @@ function JobTrackerPage() {
                                     <button
                                         onClick={() => setViewMode('cards')}
                                         className={`text-xs px-3 py-1.5 font-mono transition-colors ${viewMode === 'cards'
-                                                ? 'bg-accent-blue text-black'
-                                                : 'text-dark-muted hover:text-white'
+                                            ? 'bg-accent-blue text-black'
+                                            : 'text-dark-muted hover:text-white'
                                             }`}
                                     >
                                         CARDS
