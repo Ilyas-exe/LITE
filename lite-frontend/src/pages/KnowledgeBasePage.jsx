@@ -163,6 +163,7 @@ function KnowledgeBasePage() {
                 const data = await response.json();
                 console.log('Folder contents received:', data);
                 setTree(data);
+                setFilteredTree(data); // Also update filtered tree for grid view
             } else {
                 console.error('Failed to fetch folder:', response.status);
             }
@@ -210,7 +211,7 @@ function KnowledgeBasePage() {
                             ← BACK
                         </button>
                         <div className="h-4 w-px bg-dark-border"></div>
-                        <h1 className="text-sm md:text-lg font-medium text-white font-mono">KB</h1>
+                        <h1 className="text-sm md:text-lg font-medium text-white font-mono">KNOWLEDGE_BASE</h1>
                     </div>
 
                     <div className="flex items-center gap-2 md:gap-6">
