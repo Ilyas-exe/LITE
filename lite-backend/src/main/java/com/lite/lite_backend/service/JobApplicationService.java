@@ -146,4 +146,20 @@ public class JobApplicationService {
 
         return convertToDTO(updated);
     }
+
+    /**
+     * Search job applications by company or role
+     */
+    public List<JobApplicationDTO> searchJobApplications(String query) {
+        User currentUser = getCurrentUser();
+        List<JobApplication> allJobs = jobApplicationRepository.findByUserOrderByDateAppliedDesc(currentUser);
+
+        String lowerQuery = query.toLowerCase();
+        return allJobs.stream()
+                .filter(job -> (job.getCompany() != null && job.getCompany().toLowerCase().contains(lowerQuery)) ||
+                        (job.getRole() != null && job.getRole().toLowerCase().contains(lowerQuery)) ||
+                        (job.getStatus() != null && job.getStatus().toLowerCase().contains(lowerQuery)))
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 }
