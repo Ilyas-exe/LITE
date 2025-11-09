@@ -44,10 +44,10 @@ const Dashboard = () => {
                             <button className="feature-btn">Open →</button>
                         </div>
 
-                        <div className="feature-card">
+                        <div className="feature-card" onClick={() => navigate('/knowledge-base')} style={{ cursor: 'pointer' }}>
                             <h3>📚 Knowledge Base</h3>
                             <p>Store and organize your notes and documents</p>
-                            <span className="coming-soon">Coming Soon</span>
+                            <button className="feature-btn">Open →</button>
                         </div>
                     </div>
                 </div>
