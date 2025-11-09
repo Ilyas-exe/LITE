@@ -2,12 +2,14 @@ import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import GlobalSearch from '../components/GlobalSearch';
+import { exportFullBackup, importBackup } from '../utils/exportUtils';
 
 const Dashboard = () => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [searchOpen, setSearchOpen] = useState(false);
     const [stats, setStats] = useState({ jobs: 0, tasks: 0, kb: 0 });
+    const [showBackupModal, setShowBackupModal] = useState(false);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -63,6 +65,37 @@ const Dashboard = () => {
         navigate('/login');
     };
 
+    const handleBackup = async () => {
+        const result = await exportFullBackup();
+        if (result.success) {
+            alert(result.message);
+        } else {
+            alert(result.message);
+        }
+    };
+
+    const handleImport = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                importBackup(
+                    file,
+                    (backup) => {
+                        setShowBackupModal(false);
+                        alert(`Backup loaded! Contains:\n- ${backup.data.jobs?.length || 0} jobs\n- ${backup.data.tasks?.length || 0} tasks\n- Knowledge base data\n\nNote: Restore functionality coming soon!`);
+                    },
+                    (error) => {
+                        alert(`Import failed: ${error}`);
+                    }
+                );
+            }
+        };
+        input.click();
+    };
+
     const modules = [
         {
             title: 'JOB_TRACKER',
@@ -109,6 +142,12 @@ const Dashboard = () => {
                         >
                             SEARCH
                             <span className="text-xs">⌘K</span>
+                        </button>
+                        <button
+                            onClick={() => setShowBackupModal(true)}
+                            className="text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-green px-4 py-1.5 rounded"
+                        >
+                            BACKUP
                         </button>
                         <div className="text-sm text-dark-muted font-mono">
                             <span className="text-dark-text">{user?.username || 'User'}</span>
@@ -183,6 +222,38 @@ const Dashboard = () => {
 
             {/* Global Search Modal */}
             <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+            {/* Backup/Restore Modal */}
+            {showBackupModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={() => setShowBackupModal(false)}>
+                    <div className="bg-dark-bg border border-dark-border rounded-lg p-6 w-full max-w-md shadow-2xl animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="text-lg font-medium text-white font-mono mb-4">Backup & Restore</h3>
+                        <p className="text-sm text-dark-muted font-mono mb-6">
+                            Export all your data for safekeeping or import from a previous backup.
+                        </p>
+                        <div className="space-y-3">
+                            <button
+                                onClick={handleBackup}
+                                className="w-full px-4 py-3 rounded text-sm font-mono bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 transition-colors"
+                            >
+                                EXPORT_BACKUP
+                            </button>
+                            <button
+                                onClick={handleImport}
+                                className="w-full px-4 py-3 rounded text-sm font-mono bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 transition-colors"
+                            >
+                                IMPORT_BACKUP
+                            </button>
+                            <button
+                                onClick={() => setShowBackupModal(false)}
+                                className="w-full px-4 py-3 rounded text-sm font-mono text-dark-muted hover:text-white border border-dark-border hover:border-white transition-colors"
+                            >
+                                CANCEL
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
