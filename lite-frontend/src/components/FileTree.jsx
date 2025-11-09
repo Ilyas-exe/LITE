@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './FileTree.css';
 
 function FileTree({ tree, onItemClick, onRefresh }) {
     const [expandedFolders, setExpandedFolders] = useState(new Set());
@@ -252,48 +251,53 @@ function FileTree({ tree, onItemClick, onRefresh }) {
         const itemCount = (folder.notes?.length || 0) + (folder.documents?.length || 0) + (folder.subFolders?.length || 0);
 
         return (
-            <div key={folder.id} className="tree-folder" style={{ marginLeft: `${depth * 20}px` }}>
-                <div className={`tree-item folder-item ${isActive ? 'active-folder' : ''}`}>
+            <div key={folder.id} style={{ marginLeft: `${depth * 12}px` }}>
+                <div className={`flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer group ${isActive ? 'bg-accent-blue/10 border-l-2 border-accent-blue' : ''}`}>
                     <span
                         onClick={() => {
                             toggleFolder(folder.id);
-                            setActiveFolder(folder.id); // Set as active folder when clicked
+                            setActiveFolder(folder.id);
                         }}
-                        className="folder-toggle"
+                        className="flex items-center gap-2 flex-1 text-xs font-mono text-dark-muted hover:text-white transition-colors"
                     >
-                        {isExpanded ? '📂' : '📁'} {folder.name}
-                        {itemCount > 0 && <span className="item-count">{itemCount}</span>}
+                        <span className="text-[10px] font-bold">{isExpanded ? '▼' : '▶'}</span>
+                        <span className="truncate">{folder.name}</span>
+                        {itemCount > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-dark-border text-dark-muted">{itemCount}</span>}
                     </span>
                     <button
                         onClick={() => handleDelete(folder.id, 'folder')}
-                        className="btn-delete-small"
+                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-xs px-1 transition-opacity"
                     >
                         ×
                     </button>
                 </div>
 
                 {isExpanded && (
-                    <div className="tree-children">
+                    <div className="mt-1">
                         {folder.subFolders?.map(subFolder => renderFolder(subFolder, depth + 1, currentPath))}
                         {folder.notes?.map(note => (
-                            <div key={note.id} className="tree-item note-item" style={{ marginLeft: `${(depth + 1) * 20}px` }}>
-                                <span onClick={() => onItemClick(note, 'note', currentPath)}>
-                                    📝 {note.title}
+                            <div key={note.id} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer group" style={{ marginLeft: `${(depth + 1) * 12}px` }}>
+                                <span 
+                                    onClick={() => onItemClick(note, 'note', currentPath)}
+                                    className="flex items-center gap-2 flex-1 text-xs font-mono text-dark-muted hover:text-white transition-colors truncate"
+                                >
+                                    <span className="text-[10px]">MD</span>
+                                    <span className="truncate">{note.title}</span>
                                 </span>
-                                <div className="item-actions">
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => {
                                             setMoveItem({ id: note.id, type: 'note' });
                                             setShowMoveModal(true);
                                         }}
-                                        className="btn-move-small"
-                                        title="Move to folder"
+                                        className="text-accent-blue hover:text-accent-blue/80 text-xs px-1"
+                                        title="Move"
                                     >
                                         ↔
                                     </button>
                                     <button
                                         onClick={() => handleDelete(note.id, 'note')}
-                                        className="btn-delete-small"
+                                        className="text-red-400 hover:text-red-300 text-xs px-1"
                                     >
                                         ×
                                     </button>
@@ -301,18 +305,20 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                             </div>
                         ))}
                         {folder.documents?.map(doc => (
-                            <div key={doc.id} className="tree-item doc-item" style={{ marginLeft: `${(depth + 1) * 20}px` }}>
-                                <span onClick={() => onItemClick(doc, 'document', currentPath)}>
-                                    📄 {doc.fileName}
+                            <div key={doc.id} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer group" style={{ marginLeft: `${(depth + 1) * 12}px` }}>
+                                <span 
+                                    onClick={() => onItemClick(doc, 'document', currentPath)}
+                                    className="flex items-center gap-2 flex-1 text-xs font-mono text-dark-muted hover:text-white transition-colors truncate"
+                                >
+                                    <span className="text-[10px]">{doc.fileName.split('.').pop().toUpperCase().slice(0,3)}</span>
+                                    <span className="truncate">{doc.fileName}</span>
                                 </span>
-                                <div className="item-actions">
-                                    <button
-                                        onClick={() => handleDelete(doc.id, 'document')}
-                                        className="btn-delete-small"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
+                                <button
+                                    onClick={() => handleDelete(doc.id, 'document')}
+                                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-xs px-1 transition-opacity"
+                                >
+                                    ×
+                                </button>
                             </div>
                         ))}
                     </div>
@@ -342,55 +348,64 @@ function FileTree({ tree, onItemClick, onRefresh }) {
     };
 
     return (
-        <div className="file-tree">
-            <div className="tree-header">
-                <h3>Files</h3>
-                <div className="tree-actions">
-                    <button onClick={expandAll} className="btn-tree-action-small" title="Expand All">
-                        ⊞
+        <div>
+            {/* Toolbar */}
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-dark-border">
+                <div className="flex gap-1">
+                    <button onClick={expandAll} className="text-xs px-2 py-1 rounded bg-dark-bg border border-dark-border text-dark-muted hover:text-white hover:border-accent-blue transition-colors font-mono" title="Expand All">
+                        +
                     </button>
-                    <button onClick={collapseAll} className="btn-tree-action-small" title="Collapse All">
-                        ⊟
+                    <button onClick={collapseAll} className="text-xs px-2 py-1 rounded bg-dark-bg border border-dark-border text-dark-muted hover:text-white hover:border-accent-blue transition-colors font-mono" title="Collapse All">
+                        -
                     </button>
-                    <button onClick={() => setShowNewFolderModal(true)} className="btn-tree-action" title="New Folder">
-                        📁+
+                </div>
+                <div className="flex gap-1">
+                    <button onClick={() => setShowNewFolderModal(true)} className="text-xs px-2 py-1 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono" title="New Folder">
+                        DIR
                     </button>
-                    <button onClick={handleCreateNote} className="btn-tree-action" title={activeFolder ? "New Note in selected folder" : "New Note"}>
-                        📝+
+                    <button onClick={handleCreateNote} className="text-xs px-2 py-1 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono" title="New Note">
+                        MD
                     </button>
-                    <button onClick={() => setShowUploadModal(true)} className="btn-tree-action" title={activeFolder ? "Upload to selected folder" : "Upload Document"}>
-                        📤
+                    <button onClick={() => setShowUploadModal(true)} className="text-xs px-2 py-1 rounded bg-accent-orange/10 text-accent-orange border border-accent-orange/30 hover:bg-accent-orange/20 hover:border-accent-orange transition-colors font-mono" title="Upload">
+                        UP
                     </button>
                 </div>
             </div>
+
             {activeFolder && (
-                <div className="active-folder-indicator">
-                    Creating in: <strong>{getFolderName(activeFolder)}</strong>
-                    <button onClick={() => setActiveFolder(null)} className="btn-clear-folder">×</button>
+                <div className="flex items-center justify-between text-xs bg-accent-blue/5 border border-accent-blue/20 rounded px-2 py-1.5 mb-3 font-mono">
+                    <span className="text-dark-muted">
+                        Target: <span className="text-accent-blue">{getFolderName(activeFolder)}</span>
+                    </span>
+                    <button onClick={() => setActiveFolder(null)} className="text-dark-muted hover:text-white">×</button>
                 </div>
             )}
 
-            <div className="tree-content">
+            <div className="space-y-0.5">
                 {/* Render root-level notes */}
                 {tree.notes?.map(note => (
-                    <div key={note.id} className="tree-item note-item">
-                        <span onClick={() => onItemClick(note, 'note')}>
-                            📝 {note.title}
+                    <div key={note.id} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer group">
+                        <span 
+                            onClick={() => onItemClick(note, 'note')}
+                            className="flex items-center gap-2 flex-1 text-xs font-mono text-dark-muted hover:text-white transition-colors truncate"
+                        >
+                            <span className="text-[10px]">MD</span>
+                            <span className="truncate">{note.title}</span>
                         </span>
-                        <div className="item-actions">
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                                 onClick={() => {
                                     setMoveItem({ id: note.id, type: 'note' });
                                     setShowMoveModal(true);
                                 }}
-                                className="btn-move-small"
-                                title="Move to folder"
+                                className="text-accent-blue hover:text-accent-blue/80 text-xs px-1"
+                                title="Move"
                             >
                                 ↔
                             </button>
                             <button
                                 onClick={() => handleDelete(note.id, 'note')}
-                                className="btn-delete-small"
+                                className="text-red-400 hover:text-red-300 text-xs px-1"
                             >
                                 ×
                             </button>
@@ -400,18 +415,20 @@ function FileTree({ tree, onItemClick, onRefresh }) {
 
                 {/* Render root-level documents */}
                 {tree.documents?.map(doc => (
-                    <div key={doc.id} className="tree-item doc-item">
-                        <span onClick={() => onItemClick(doc, 'document')}>
-                            📄 {doc.fileName}
+                    <div key={doc.id} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer group">
+                        <span 
+                            onClick={() => onItemClick(doc, 'document')}
+                            className="flex items-center gap-2 flex-1 text-xs font-mono text-dark-muted hover:text-white transition-colors truncate"
+                        >
+                            <span className="text-[10px]">{doc.fileName.split('.').pop().toUpperCase().slice(0,3)}</span>
+                            <span className="truncate">{doc.fileName}</span>
                         </span>
-                        <div className="item-actions">
-                            <button
-                                onClick={() => handleDelete(doc.id, 'document')}
-                                className="btn-delete-small"
-                            >
-                                ×
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => handleDelete(doc.id, 'document')}
+                            className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-xs px-1 transition-opacity"
+                        >
+                            ×
+                        </button>
                     </div>
                 ))}
 
