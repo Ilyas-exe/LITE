@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-function JobTable({ jobs, onRefresh }) {
+function JobTable({ jobs, onRefresh, viewMode = 'table' }) {
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({});
     const [uploadingId, setUploadingId] = useState(null);
