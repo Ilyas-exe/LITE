@@ -11,6 +11,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 function Viewer({ item, type, onRefresh }) {
     const [note, setNote] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [viewMode, setViewMode] = useState('preview'); // 'preview', 'edit', 'split'
     const [editContent, setEditContent] = useState('');
     const [editTitle, setEditTitle] = useState('');
     const [numPages, setNumPages] = useState(null);
@@ -83,20 +84,54 @@ function Viewer({ item, type, onRefresh }) {
     if (type === 'note' && note) {
         return (
             <div className="viewer-container">
+                {item.folderPath && item.folderPath.length > 0 && (
+                    <div className="breadcrumb">
+                        <span className="breadcrumb-item">📁 Root</span>
+                        {item.folderPath.map((folder, index) => (
+                            <span key={folder.id} className="breadcrumb-item">
+                                <span className="breadcrumb-separator">›</span>
+                                {folder.name}
+                            </span>
+                        ))}
+                    </div>
+                )}
                 <div className="viewer-header">
                     <h2>{note.title}</h2>
                     <div className="viewer-actions">
                         {!isEditing ? (
-                            <button onClick={() => setIsEditing(true)} className="btn-edit-note">
-                                Edit
+                            <button onClick={() => { setIsEditing(true); setViewMode('split'); }} className="btn-edit-note">
+                                ✏️ Edit
                             </button>
                         ) : (
                             <>
-                                <button onClick={() => setIsEditing(false)} className="btn-cancel-note">
+                                <div className="view-mode-toggle">
+                                    <button
+                                        onClick={() => setViewMode('edit')}
+                                        className={`btn-view-mode ${viewMode === 'edit' ? 'active' : ''}`}
+                                        title="Edit Only"
+                                    >
+                                        📝
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('split')}
+                                        className={`btn-view-mode ${viewMode === 'split' ? 'active' : ''}`}
+                                        title="Split View"
+                                    >
+                                        ⚏
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('preview')}
+                                        className={`btn-view-mode ${viewMode === 'preview' ? 'active' : ''}`}
+                                        title="Preview Only"
+                                    >
+                                        👁️
+                                    </button>
+                                </div>
+                                <button onClick={() => { setIsEditing(false); setViewMode('preview'); }} className="btn-cancel-note">
                                     Cancel
                                 </button>
                                 <button onClick={handleSaveNote} className="btn-save-note">
-                                    Save
+                                    💾 Save
                                 </button>
                             </>
                         )}
@@ -104,20 +139,37 @@ function Viewer({ item, type, onRefresh }) {
                 </div>
 
                 {isEditing ? (
-                    <div className="editor-container">
-                        <input
-                            type="text"
-                            value={editTitle}
-                            onChange={(e) => setEditTitle(e.target.value)}
-                            className="edit-title-input"
-                            placeholder="Note title"
-                        />
-                        <textarea
-                            value={editContent}
-                            onChange={(e) => setEditContent(e.target.value)}
-                            className="edit-content-textarea"
-                            placeholder="Write your markdown content here..."
-                        />
+                    <div className={`note-editor-wrapper ${viewMode}`}>
+                        {(viewMode === 'edit' || viewMode === 'split') && (
+                            <div className="editor-panel">
+                                <input
+                                    type="text"
+                                    value={editTitle}
+                                    onChange={(e) => setEditTitle(e.target.value)}
+                                    className="edit-title-input"
+                                    placeholder="Note title"
+                                />
+                                <textarea
+                                    value={editContent}
+                                    onChange={(e) => setEditContent(e.target.value)}
+                                    className="edit-content-textarea"
+                                    placeholder="Write your markdown content here..."
+                                />
+                            </div>
+                        )}
+                        {(viewMode === 'preview' || viewMode === 'split') && (
+                            <div className="preview-panel">
+                                <h3 className="preview-title">{editTitle || 'Untitled'}</h3>
+                                <div className="markdown-container">
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw]}
+                                    >
+                                        {editContent || '*No content yet*'}
+                                    </ReactMarkdown>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="markdown-container">
@@ -136,6 +188,17 @@ function Viewer({ item, type, onRefresh }) {
     if (type === 'document' && item) {
         return (
             <div className="viewer-container">
+                {item.folderPath && item.folderPath.length > 0 && (
+                    <div className="breadcrumb">
+                        <span className="breadcrumb-item">📁 Root</span>
+                        {item.folderPath.map((folder, index) => (
+                            <span key={folder.id} className="breadcrumb-item">
+                                <span className="breadcrumb-separator">›</span>
+                                {folder.name}
+                            </span>
+                        ))}
+                    </div>
+                )}
                 <div className="viewer-header">
                     <h2>📄 {item.fileName}</h2>
                     <a href={item.documentUrl} target="_blank" rel="noopener noreferrer" className="btn-open-external">
