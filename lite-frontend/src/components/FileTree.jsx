@@ -1,0 +1,321 @@
+import { useState } from 'react';
+import './FileTree.css';
+
+function FileTree({ tree, onItemClick, onRefresh }) {
+    const [expandedFolders, setExpandedFolders] = useState(new Set());
+    const [showNewFolderModal, setShowNewFolderModal] = useState(false);
+    const [showUploadModal, setShowUploadModal] = useState(false);
+    const [newItemName, setNewItemName] = useState('');
+    const [selectedFolderId, setSelectedFolderId] = useState(null);
+    const [uploadFile, setUploadFile] = useState(null);
+    const [activeFolder, setActiveFolder] = useState(null); // Track currently selected folder for creating items
+
+    const toggleFolder = (folderId) => {
+        const newExpanded = new Set(expandedFolders);
+        if (newExpanded.has(folderId)) {
+            newExpanded.delete(folderId);
+        } else {
+            newExpanded.add(folderId);
+        }
+        setExpandedFolders(newExpanded);
+    };
+
+    const getFolderName = (folderId) => {
+        const findFolder = (folders) => {
+            for (const folder of folders) {
+                if (folder.id === folderId) return folder.name;
+                if (folder.subFolders?.length) {
+                    const found = findFolder(folder.subFolders);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+        return findFolder(tree.subFolders || []) || 'Unknown';
+    };
+
+    const handleCreateFolder = async () => {
+        if (!newItemName.trim()) return;
+
+        try {
+            const response = await fetch('http://localhost:8080/api/kb/folders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    name: newItemName,
+                    parentFolderId: selectedFolderId
+                })
+            });
+
+            if (response.ok) {
+                setShowNewFolderModal(false);
+                setNewItemName('');
+                setSelectedFolderId(null);
+                onRefresh();
+            }
+        } catch (error) {
+            console.error('Error creating folder:', error);
+        }
+    };
+
+    const handleCreateNote = async () => {
+        try {
+            const response = await fetch('http://localhost:8080/api/kb/notes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    title: 'Untitled',
+                    content: '',
+                    folderId: activeFolder // Use currently selected folder
+                })
+            });
+
+            if (response.ok) {
+                const newNote = await response.json();
+                await onRefresh();
+                // Auto-expand folder if note was created inside one
+                if (activeFolder) {
+                    const newExpanded = new Set(expandedFolders);
+                    newExpanded.add(activeFolder);
+                    setExpandedFolders(newExpanded);
+                }
+                // Auto-click the new note to open it
+                onItemClick(newNote, 'note');
+            }
+        } catch (error) {
+            console.error('Error creating note:', error);
+            alert('Failed to create note');
+        }
+    };
+
+    const handleUploadDocument = async () => {
+        if (!uploadFile) {
+            alert('Please select a file');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', uploadFile);
+        if (activeFolder) {
+            formData.append('folderId', activeFolder); // Use currently selected folder
+        }
+
+        try {
+            const response = await fetch('http://localhost:8080/api/kb/upload-document', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                setShowUploadModal(false);
+                setUploadFile(null);
+                await onRefresh();
+                // Auto-expand folder if document was uploaded inside one
+                if (activeFolder) {
+                    const newExpanded = new Set(expandedFolders);
+                    newExpanded.add(activeFolder);
+                    setExpandedFolders(newExpanded);
+                }
+                alert('Document uploaded successfully!');
+            } else {
+                alert('Failed to upload document');
+            }
+        } catch (error) {
+            console.error('Error uploading document:', error);
+            alert('Error uploading document');
+        }
+    };
+
+    const handleDelete = async (id, type) => {
+        if (!window.confirm(`Delete this ${type}?`)) return;
+
+        try {
+            let endpoint = '';
+            if (type === 'folder') endpoint = `/api/kb/folders/${id}`;
+            else if (type === 'note') endpoint = `/api/kb/notes/${id}`;
+            else if (type === 'document') endpoint = `/api/kb/documents/${id}`;
+
+            const response = await fetch(`http://localhost:8080${endpoint}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (response.ok) {
+                onRefresh();
+            }
+        } catch (error) {
+            console.error(`Error deleting ${type}:`, error);
+        }
+    };
+
+    const renderFolder = (folder, depth = 0) => {
+        const isExpanded = expandedFolders.has(folder.id);
+        const isActive = activeFolder === folder.id;
+
+        return (
+            <div key={folder.id} className="tree-folder" style={{ marginLeft: `${depth * 20}px` }}>
+                <div className={`tree-item folder-item ${isActive ? 'active-folder' : ''}`}>
+                    <span
+                        onClick={() => {
+                            toggleFolder(folder.id);
+                            setActiveFolder(folder.id); // Set as active folder when clicked
+                        }}
+                        className="folder-toggle"
+                    >
+                        {isExpanded ? '📂' : '📁'} {folder.name}
+                    </span>
+                    <button
+                        onClick={() => handleDelete(folder.id, 'folder')}
+                        className="btn-delete-small"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                {isExpanded && (
+                    <div className="tree-children">
+                        {folder.subFolders?.map(subFolder => renderFolder(subFolder, depth + 1))}
+                        {folder.notes?.map(note => (
+                            <div key={note.id} className="tree-item note-item" style={{ marginLeft: `${(depth + 1) * 20}px` }}>
+                                <span onClick={() => onItemClick(note, 'note')}>
+                                    📝 {note.title}
+                                </span>
+                                <button
+                                    onClick={() => handleDelete(note.id, 'note')}
+                                    className="btn-delete-small"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                        {folder.documents?.map(doc => (
+                            <div key={doc.id} className="tree-item doc-item" style={{ marginLeft: `${(depth + 1) * 20}px` }}>
+                                <span onClick={() => onItemClick(doc, 'document')}>
+                                    📄 {doc.fileName}
+                                </span>
+                                <button
+                                    onClick={() => handleDelete(doc.id, 'document')}
+                                    className="btn-delete-small"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    return (
+        <div className="file-tree">
+            <div className="tree-header">
+                <h3>Files</h3>
+                <div className="tree-actions">
+                    <button onClick={() => setShowNewFolderModal(true)} className="btn-tree-action" title="New Folder">
+                        📁+
+                    </button>
+                    <button onClick={handleCreateNote} className="btn-tree-action" title={activeFolder ? "New Note in selected folder" : "New Note"}>
+                        📝+
+                    </button>
+                    <button onClick={() => setShowUploadModal(true)} className="btn-tree-action" title={activeFolder ? "Upload to selected folder" : "Upload Document"}>
+                        📤
+                    </button>
+                </div>
+            </div>
+            {activeFolder && (
+                <div className="active-folder-indicator">
+                    Creating in: <strong>{getFolderName(activeFolder)}</strong>
+                    <button onClick={() => setActiveFolder(null)} className="btn-clear-folder">×</button>
+                </div>
+            )}
+
+            <div className="tree-content">
+                {/* Render root-level notes */}
+                {tree.notes?.map(note => (
+                    <div key={note.id} className="tree-item note-item">
+                        <span onClick={() => onItemClick(note, 'note')}>
+                            📝 {note.title}
+                        </span>
+                        <button
+                            onClick={() => handleDelete(note.id, 'note')}
+                            className="btn-delete-small"
+                        >
+                            ×
+                        </button>
+                    </div>
+                ))}
+
+                {/* Render root-level documents */}
+                {tree.documents?.map(doc => (
+                    <div key={doc.id} className="tree-item doc-item">
+                        <span onClick={() => onItemClick(doc, 'document')}>
+                            📄 {doc.fileName}
+                        </span>
+                        <button
+                            onClick={() => handleDelete(doc.id, 'document')}
+                            className="btn-delete-small"
+                        >
+                            ×
+                        </button>
+                    </div>
+                ))}
+
+                {/* Render folders */}
+                {tree.subFolders?.map(folder => renderFolder(folder))}
+            </div>
+
+            {showNewFolderModal && (
+                <div className="modal-overlay" onClick={() => setShowNewFolderModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h3>New Folder</h3>
+                        <input
+                            type="text"
+                            value={newItemName}
+                            onChange={(e) => setNewItemName(e.target.value)}
+                            placeholder="Folder name"
+                            autoFocus
+                        />
+                        <div className="modal-actions">
+                            <button onClick={() => setShowNewFolderModal(false)}>Cancel</button>
+                            <button onClick={handleCreateFolder}>Create</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showUploadModal && (
+                <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h3>Upload Document</h3>
+                        <input
+                            type="file"
+                            onChange={(e) => setUploadFile(e.target.files[0])}
+                        />
+                        {uploadFile && <p className="file-selected">Selected: {uploadFile.name}</p>}
+                        <div className="modal-actions">
+                            <button onClick={() => {
+                                setShowUploadModal(false);
+                                setUploadFile(null);
+                            }}>Cancel</button>
+                            <button onClick={handleUploadDocument}>Upload</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default FileTree;
