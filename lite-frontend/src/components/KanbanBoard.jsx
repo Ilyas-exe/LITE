@@ -40,11 +40,11 @@ function KanbanBoard({ tasks, onTaskUpdate, onTaskDelete }) {
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto pb-4 md:pb-0 -mx-4 md:mx-0 px-4 md:px-0">
             {/* TODO COLUMN */}
-            <div className="space-y-3">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-accent-blue/30">
-                    <h3 className="text-sm font-medium text-white font-mono uppercase tracking-wider">Todo</h3>
+            <div className="min-w-[280px] md:min-w-0 space-y-3">
+                <div className="flex items-center justify-between px-3 md:px-4 py-2 border-b border-accent-blue/30">
+                    <h3 className="text-xs md:text-sm font-medium text-white font-mono uppercase tracking-wider">Todo</h3>
                     <span className="text-xs px-2 py-0.5 rounded bg-accent-blue/10 text-accent-blue font-mono">{todoTasks.length}</span>
                 </div>
                 <div className="space-y-3">
@@ -67,9 +67,9 @@ function KanbanBoard({ tasks, onTaskUpdate, onTaskDelete }) {
             </div>
 
             {/* IN PROGRESS COLUMN */}
-            <div className="space-y-3">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-accent-orange/30">
-                    <h3 className="text-sm font-medium text-white font-mono uppercase tracking-wider">Progress</h3>
+            <div className="min-w-[280px] md:min-w-0 space-y-3">
+                <div className="flex items-center justify-between px-3 md:px-4 py-2 border-b border-accent-orange/30">
+                    <h3 className="text-xs md:text-sm font-medium text-white font-mono uppercase tracking-wider">Progress</h3>
                     <span className="text-xs px-2 py-0.5 rounded bg-accent-orange/10 text-accent-orange font-mono">{inProgressTasks.length}</span>
                 </div>
                 <div className="space-y-3">
@@ -92,9 +92,9 @@ function KanbanBoard({ tasks, onTaskUpdate, onTaskDelete }) {
             </div>
 
             {/* DONE COLUMN */}
-            <div className="space-y-3">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-accent-green/30">
-                    <h3 className="text-sm font-medium text-white font-mono uppercase tracking-wider">Done</h3>
+            <div className="min-w-[280px] md:min-w-0 space-y-3">
+                <div className="flex items-center justify-between px-3 md:px-4 py-2 border-b border-accent-green/30">
+                    <h3 className="text-xs md:text-sm font-medium text-white font-mono uppercase tracking-wider">Done</h3>
                     <span className="text-xs px-2 py-0.5 rounded bg-accent-green/10 text-accent-green font-mono">{doneTasks.length}</span>
                 </div>
                 <div className="space-y-3">
