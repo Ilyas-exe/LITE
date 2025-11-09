@@ -35,12 +35,29 @@ function TaskManagerPage() {
 
             const data = await response.json();
             setTasks(data);
+            setFilteredTasks(data);
         } catch (err) {
             setError(err.message);
             console.error('Error fetching tasks:', err);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSearch = (query) => {
+        setSearchQuery(query);
+        if (!query.trim()) {
+            setFilteredTasks(tasks);
+            return;
+        }
+
+        const lowerQuery = query.toLowerCase();
+        const filtered = tasks.filter(task =>
+            task.title?.toLowerCase().includes(lowerQuery) ||
+            task.description?.toLowerCase().includes(lowerQuery) ||
+            task.status?.toLowerCase().includes(lowerQuery)
+        );
+        setFilteredTasks(filtered);
     };
 
     const handleLogout = () => {
@@ -52,9 +69,9 @@ function TaskManagerPage() {
         navigate('/dashboard');
     };
 
-    const todoTasks = tasks.filter(task => task.status === 'TODO');
-    const inProgressTasks = tasks.filter(task => task.status === 'IN_PROGRESS');
-    const doneTasks = tasks.filter(task => task.status === 'DONE');
+    const todoTasks = filteredTasks.filter(task => task.status === 'TODO');
+    const inProgressTasks = filteredTasks.filter(task => task.status === 'IN_PROGRESS');
+    const doneTasks = filteredTasks.filter(task => task.status === 'DONE');
 
     return (
         <div className="min-h-screen animate-fade-in">
