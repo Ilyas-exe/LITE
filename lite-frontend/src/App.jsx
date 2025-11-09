@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import JobTrackerPage from './pages/JobTrackerPage';
 import TaskManagerPage from './pages/TaskManagerPage';
 import KnowledgeBasePage from './pages/KnowledgeBasePage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import './App.css';
 
 function App() {
@@ -56,6 +57,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <KnowledgeBasePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <AnalyticsPage />
               </ProtectedRoute>
             }
           />
