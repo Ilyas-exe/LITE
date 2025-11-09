@@ -194,6 +194,45 @@
     text-decoration: underline;
 }
 
+.markdown-container table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+}
+
+.markdown-container table th,
+.markdown-container table td {
+    border: 1px solid #ddd;
+    padding: 0.6rem;
+    text-align: left;
+}
+
+.markdown-container table th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.markdown-container table tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.markdown-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 1rem 0;
+}
+
+.markdown-container hr {
+    border: none;
+    border-top: 2px solid #e0e0e0;
+    margin: 2rem 0;
+}
+
+.markdown-container input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
 .pdf-container {
     margin-top: 2rem;
 }
