@@ -45,3 +45,159 @@ body {
     min-width: 44px;
   }
 }
+
+/* Space Theme Styles */
+body.space-theme {
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+body.space-theme::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(ellipse at top left, rgba(59, 130, 246, 0.15), transparent 50%),
+    radial-gradient(ellipse at top right, rgba(139, 92, 246, 0.1), transparent 50%),
+    radial-gradient(ellipse at bottom center, rgba(34, 197, 94, 0.08), transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Nebula overlay animation */
+@keyframes nebula-drift {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% { 
+    transform: translate(20px, 10px) scale(1.05);
+    opacity: 0.5;
+  }
+}
+
+body.space-theme .nebula-overlay {
+  animation: nebula-drift 20s ease-in-out infinite;
+}
+
+/* Cosmic glow effect for cards in space theme */
+body.space-theme .card {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+  transition: all 0.3s ease;
+}
+
+body.space-theme .card:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Floating particles animation */
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.6;
+  }
+}
+
+.particle {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  background: rgba(59, 130, 246, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float-particle 6s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Cosmic button effects */
+body.space-theme button:not(.theme-toggle) {
+  position: relative;
+  overflow: hidden;
+}
+
+body.space-theme button:not(.theme-toggle)::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+body.space-theme button:not(.theme-toggle):hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Glow text effect for headings in space theme */
+body.space-theme h1,
+body.space-theme h2,
+body.space-theme h3 {
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Theme toggle button special styling */
+.theme-toggle {
+  position: relative;
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.theme-toggle:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  transform: scale(1.05);
+}
+
+body.space-theme .theme-toggle {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+}
+
+/* Shooting star animation */
+@keyframes shooting-star {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(300px) translateY(300px);
+    opacity: 0;
+  }
+}
+
+.shooting-star {
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.5);
+  animation: shooting-star 3s linear;
+  pointer-events: none;
+  z-index: 1;
+}
