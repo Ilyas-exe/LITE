@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import FileTree from '../components/FileTree';
 import Viewer from '../components/Viewer';
+import MobileNav from '../components/MobileNav';
 
 function KnowledgeBasePage() {
     const { user, logout } = useContext(AuthContext);
@@ -151,28 +152,28 @@ function KnowledgeBasePage() {
     };
 
     return (
-        <div className="min-h-screen animate-fade-in">
+        <div className="min-h-screen animate-fade-in pb-20 md:pb-0">
             {/* Header */}
             <header className="border-b border-dark-border bg-dark-bg/80 backdrop-blur-sm sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2 md:gap-4">
                         <button
                             onClick={handleBackToDashboard}
-                            className="text-dark-muted hover:text-white font-mono text-sm transition-colors"
+                            className="text-dark-muted hover:text-white font-mono text-xs md:text-sm transition-colors"
                         >
                             ← BACK
                         </button>
                         <div className="h-4 w-px bg-dark-border"></div>
-                        <h1 className="text-lg font-medium text-white font-mono">KNOWLEDGE_BASE</h1>
+                        <h1 className="text-sm md:text-lg font-medium text-white font-mono">KB</h1>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <div className="text-sm text-dark-muted font-mono">
+                    <div className="flex items-center gap-2 md:gap-6">
+                        <div className="text-xs md:text-sm text-dark-muted font-mono hidden sm:block">
                             <span className="text-dark-text">{user?.username}</span>
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-4 py-1.5 rounded"
+                            className="text-xs md:text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-2 md:px-4 py-1.5 rounded"
                         >
                             LOGOUT
                         </button>
@@ -181,7 +182,7 @@ function KnowledgeBasePage() {
             </header>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-6 py-6">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
                 {/* Search Bar */}
                 <div className="card mb-6">
                     <div className="flex items-center gap-3">
@@ -460,6 +461,9 @@ function KnowledgeBasePage() {
                     </div>
                 )}
             </div>
+
+            {/* Mobile Navigation */}
+            <MobileNav />
         </div>
     );
 }
