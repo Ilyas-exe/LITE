@@ -12,7 +12,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -339,5 +341,42 @@ public class KnowledgeBaseController {
 
         documentRepository.delete(document);
         return ResponseEntity.noContent().build();
+    }
+
+    // GET /api/kb/search?q={query} - Search notes and documents
+    @GetMapping("/search")
+    public ResponseEntity<Map<String, Object>> searchKnowledgeBase(
+            @RequestParam String q,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+
+        String lowerQuery = q.toLowerCase();
+
+        // Search notes
+        List<Note> allNotes = noteRepository.findByUser(user);
+        List<Map<String, Object>> matchingNotes = allNotes.stream()
+                .filter(note -> (note.getTitle() != null && note.getTitle().toLowerCase().contains(lowerQuery)) ||
+                        (note.getContent() != null && note.getContent().toLowerCase().contains(lowerQuery)))
+                .map(note -> Map.of(
+                        "id", note.getId(),
+                        "title", note.getTitle(),
+                        "type", "note"))
+                .collect(Collectors.toList());
+
+        // Search documents
+        List<Document> allDocuments = documentRepository.findByUser(user);
+        List<Map<String, Object>> matchingDocuments = allDocuments.stream()
+                .filter(doc -> doc.getFileName() != null && doc.getFileName().toLowerCase().contains(lowerQuery))
+                .map(doc -> Map.of(
+                        "id", doc.getId(),
+                        "fileName", doc.getFileName(),
+                        "type", "document"))
+                .collect(Collectors.toList());
+
+        Map<String, Object> results = new HashMap<>();
+        results.put("notes", matchingNotes);
+        results.put("documents", matchingDocuments);
+
+        return ResponseEntity.ok(results);
     }
 }
