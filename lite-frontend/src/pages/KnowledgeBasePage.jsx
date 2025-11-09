@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import FileTree from '../components/FileTree';
 import Viewer from '../components/Viewer';
 import MobileNav from '../components/MobileNav';
+import TemplateSelector from '../components/TemplateSelector';
 
 function KnowledgeBasePage() {
     const { user, logout } = useContext(AuthContext);
@@ -16,6 +17,8 @@ function KnowledgeBasePage() {
     const [folderPath, setFolderPath] = useState([]); // Breadcrumb trail
     const [showViewModal, setShowViewModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+    const [pendingNoteCreation, setPendingNoteCreation] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
