@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import './AddTaskModal.css';
 
 function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
     const [formData, setFormData] = useState({
@@ -69,54 +68,68 @@ function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>➕ Create New Task</h2>
-                    <button onClick={onClose} className="close-btn">✕</button>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={onClose}>
+            <div className="bg-dark-card border border-dark-border rounded-lg p-6 max-w-2xl w-full mx-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-medium text-white font-mono">ADD_TASK</h3>
+                    <button
+                        onClick={onClose}
+                        className="text-dark-muted hover:text-white transition-colors text-xl"
+                    >
+                        ×
+                    </button>
                 </div>
 
                 {error && (
-                    <div className="form-error">
-                        ⚠️ {error}
+                    <div className="bg-red-500/5 border border-red-500/20 text-red-400 px-4 py-3 rounded-md text-sm font-mono mb-4">
+                        {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="task-form">
-                    <div className="form-group">
-                        <label htmlFor="title">Title *</label>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <label htmlFor="title" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Title *
+                        </label>
                         <input
                             type="text"
                             id="title"
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            placeholder="e.g., Finish project documentation"
+                            placeholder="Finish project documentation"
                             required
                             autoFocus
+                            className="input-field"
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label htmlFor="description">Description</label>
+                    <div className="space-y-2">
+                        <label htmlFor="description" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Description
+                        </label>
                         <textarea
                             id="description"
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
-                            placeholder="Add more details... (optional)"
+                            placeholder="Add more details..."
                             rows="4"
+                            className="input-field resize-none"
                         />
                     </div>
 
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label htmlFor="status">Status</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label htmlFor="status" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                                Status
+                            </label>
                             <select
                                 id="status"
                                 name="status"
                                 value={formData.status}
                                 onChange={handleChange}
+                                className="input-field"
                             >
                                 <option value="TODO">To Do</option>
                                 <option value="IN_PROGRESS">In Progress</option>
@@ -124,24 +137,36 @@ function AddTaskModal({ isOpen, onClose, onTaskAdded }) {
                             </select>
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="dueDate">Due Date</label>
+                        <div className="space-y-2">
+                            <label htmlFor="dueDate" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                                Due Date
+                            </label>
                             <input
                                 type="date"
                                 id="dueDate"
                                 name="dueDate"
                                 value={formData.dueDate}
                                 onChange={handleChange}
+                                className="input-field"
                             />
                         </div>
                     </div>
 
-                    <div className="modal-actions">
-                        <button type="button" onClick={onClose} className="btn-secondary">
-                            Cancel
+                    <div className="flex gap-3 mt-6">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-4 py-2.5 rounded border border-dark-border text-dark-muted hover:text-white hover:border-white transition-colors font-mono text-sm"
+                            disabled={loading}
+                        >
+                            CANCEL
                         </button>
-                        <button type="submit" className="btn-primary" disabled={loading}>
-                            {loading ? '⏳ Creating...' : '✓ Create Task'}
+                        <button
+                            type="submit"
+                            className="flex-1 px-4 py-2.5 rounded bg-accent-blue hover:bg-accent-blue/80 text-black font-mono text-sm font-medium transition-colors"
+                            disabled={loading}
+                        >
+                            {loading ? 'CREATING...' : 'CREATE_TASK'}
                         </button>
                     </div>
                 </form>
