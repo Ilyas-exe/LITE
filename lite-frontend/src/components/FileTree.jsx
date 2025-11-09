@@ -222,7 +222,7 @@ function FileTree({ tree, onItemClick, onRefresh }) {
         const indent = '　'.repeat(depth); // Using full-width space for indentation
         return (
             <React.Fragment key={folder.id}>
-                <option value={folder.id}>{indent}📁 {folder.name}</option>
+                <option value={folder.id}>{indent}{folder.name}</option>
                 {folder.subFolders?.map(subFolder => renderFolderSelectOptions(subFolder, depth + 1))}
             </React.Fragment>
         );
@@ -233,11 +233,11 @@ function FileTree({ tree, onItemClick, onRefresh }) {
         return (
             <div key={folder.id}>
                 <div
-                    className="folder-option"
-                    style={{ paddingLeft: `${depth * 20}px` }}
+                    className="px-3 py-2 text-sm font-mono text-dark-muted hover:text-white hover:bg-white/5 cursor-pointer transition-colors border-b border-dark-border"
+                    style={{ paddingLeft: `${12 + depth * 20}px` }}
                     onClick={() => handleMoveToFolder(folder.id)}
                 >
-                    📁 {folder.name}
+                    {folder.name}
                 </div>
                 {folder.subFolders?.map(subFolder => renderFolderOptions(subFolder, depth + 1))}
             </div>
@@ -472,20 +472,25 @@ function FileTree({ tree, onItemClick, onRefresh }) {
             )}
 
             {showUploadModal && (
-                <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h3>Upload Document</h3>
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={() => setShowUploadModal(false)}>
+                    <div className="bg-dark-bg border border-dark-border rounded-lg p-6 w-full max-w-md shadow-2xl animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="text-lg font-medium text-white font-mono mb-4">Upload Document</h3>
                         <input
                             type="file"
                             onChange={(e) => setUploadFile(e.target.files[0])}
+                            className="w-full bg-dark-bg border border-dark-border rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-accent-blue transition-colors file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:bg-accent-orange/10 file:text-accent-orange hover:file:bg-accent-orange/20 file:cursor-pointer mb-3"
                         />
-                        {uploadFile && <p className="file-selected">Selected: {uploadFile.name}</p>}
-                        <div className="modal-actions">
+                        {uploadFile && <p className="text-xs text-accent-green font-mono mb-4 px-3 py-2 bg-accent-green/10 border border-accent-green/30 rounded">Selected: {uploadFile.name}</p>}
+                        <div className="flex gap-2 justify-end">
                             <button onClick={() => {
                                 setShowUploadModal(false);
                                 setUploadFile(null);
-                            }}>Cancel</button>
-                            <button onClick={handleUploadDocument}>Upload</button>
+                            }} className="px-4 py-2 rounded text-sm font-mono text-dark-muted hover:text-white border border-dark-border hover:border-white transition-colors">
+                                Cancel
+                            </button>
+                            <button onClick={handleUploadDocument} className="px-4 py-2 rounded text-sm font-mono bg-accent-orange text-black hover:bg-accent-orange/80 transition-colors">
+                                Upload
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -493,21 +498,23 @@ function FileTree({ tree, onItemClick, onRefresh }) {
 
             {/* Move Modal */}
             {showMoveModal && (
-                <div className="modal-overlay" onClick={() => setShowMoveModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h3>Move to Folder</h3>
-                        <p className="modal-description">Select a destination folder:</p>
-                        <div className="folder-picker">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={() => setShowMoveModal(false)}>
+                    <div className="bg-dark-bg border border-dark-border rounded-lg p-6 w-full max-w-md shadow-2xl animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="text-lg font-medium text-white font-mono mb-2">Move to Folder</h3>
+                        <p className="text-xs text-dark-muted font-mono mb-4">Select a destination folder:</p>
+                        <div className="max-h-64 overflow-y-auto border border-dark-border rounded mb-4 bg-dark-bg">
                             <div
-                                className="folder-option"
+                                className="px-3 py-2 text-sm font-mono text-dark-muted hover:text-white hover:bg-white/5 cursor-pointer transition-colors border-b border-dark-border"
                                 onClick={() => handleMoveToFolder(null)}
                             >
-                                📁 Root (Top Level)
+                                Root (Top Level)
                             </div>
                             {tree.subFolders?.map(folder => renderFolderOptions(folder))}
                         </div>
-                        <div className="modal-actions">
-                            <button onClick={() => setShowMoveModal(false)}>Cancel</button>
+                        <div className="flex gap-2 justify-end">
+                            <button onClick={() => setShowMoveModal(false)} className="px-4 py-2 rounded text-sm font-mono text-dark-muted hover:text-white border border-dark-border hover:border-white transition-colors">
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 </div>
