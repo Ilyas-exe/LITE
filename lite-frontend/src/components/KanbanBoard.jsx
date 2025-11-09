@@ -1,5 +1,4 @@
 import TaskCard from './TaskCard';
-import './KanbanBoard.css';
 
 function KanbanBoard({ tasks, onTaskUpdate, onTaskDelete }) {
     // Group tasks by status
@@ -41,15 +40,18 @@ function KanbanBoard({ tasks, onTaskUpdate, onTaskDelete }) {
     };
 
     return (
-        <div className="kanban-board">
-            <div className="kanban-column">
-                <div className="column-header todo-header">
-                    <h3>📋 To Do</h3>
-                    <span className="task-count">{todoTasks.length}</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* TODO COLUMN */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-accent-blue/30">
+                    <h3 className="text-sm font-medium text-white font-mono uppercase tracking-wider">Todo</h3>
+                    <span className="text-xs px-2 py-0.5 rounded bg-accent-blue/10 text-accent-blue font-mono">{todoTasks.length}</span>
                 </div>
-                <div className="column-content">
+                <div className="space-y-3">
                     {todoTasks.length === 0 ? (
-                        <p className="empty-column">No tasks</p>
+                        <div className="card text-center py-8">
+                            <p className="text-dark-muted font-mono text-xs">No tasks</p>
+                        </div>
                     ) : (
                         todoTasks.map(task => (
                             <TaskCard
@@ -64,14 +66,17 @@ function KanbanBoard({ tasks, onTaskUpdate, onTaskDelete }) {
                 </div>
             </div>
 
-            <div className="kanban-column">
-                <div className="column-header in-progress-header">
-                    <h3>⚡ In Progress</h3>
-                    <span className="task-count">{inProgressTasks.length}</span>
+            {/* IN PROGRESS COLUMN */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-accent-orange/30">
+                    <h3 className="text-sm font-medium text-white font-mono uppercase tracking-wider">Progress</h3>
+                    <span className="text-xs px-2 py-0.5 rounded bg-accent-orange/10 text-accent-orange font-mono">{inProgressTasks.length}</span>
                 </div>
-                <div className="column-content">
+                <div className="space-y-3">
                     {inProgressTasks.length === 0 ? (
-                        <p className="empty-column">No tasks</p>
+                        <div className="card text-center py-8">
+                            <p className="text-dark-muted font-mono text-xs">No tasks</p>
+                        </div>
                     ) : (
                         inProgressTasks.map(task => (
                             <TaskCard
@@ -86,14 +91,17 @@ function KanbanBoard({ tasks, onTaskUpdate, onTaskDelete }) {
                 </div>
             </div>
 
-            <div className="kanban-column">
-                <div className="column-header done-header">
-                    <h3>✅ Done</h3>
-                    <span className="task-count">{doneTasks.length}</span>
+            {/* DONE COLUMN */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-accent-green/30">
+                    <h3 className="text-sm font-medium text-white font-mono uppercase tracking-wider">Done</h3>
+                    <span className="text-xs px-2 py-0.5 rounded bg-accent-green/10 text-accent-green font-mono">{doneTasks.length}</span>
                 </div>
-                <div className="column-content">
+                <div className="space-y-3">
                     {doneTasks.length === 0 ? (
-                        <p className="empty-column">No tasks</p>
+                        <div className="card text-center py-8">
+                            <p className="text-dark-muted font-mono text-xs">No tasks</p>
+                        </div>
                     ) : (
                         doneTasks.map(task => (
                             <TaskCard
