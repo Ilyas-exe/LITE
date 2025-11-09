@@ -210,6 +210,23 @@ public class KnowledgeBaseController {
         }
     }
 
+    // GET /api/kb/folders/{id} - Get folder contents
+    @GetMapping("/folders/{id}")
+    public ResponseEntity<FolderTreeDTO> getFolderContents(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Folder folder = folderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Folder not found"));
+
+        if (!folder.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        FolderTreeDTO dto = buildFolderTree(folder);
+        return ResponseEntity.ok(dto);
+    }
+
     // POST /api/kb/folders - Create a folder
     @PostMapping("/folders")
     public ResponseEntity<FolderDTO> createFolder(
