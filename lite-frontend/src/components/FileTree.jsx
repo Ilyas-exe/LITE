@@ -277,7 +277,7 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                         {folder.subFolders?.map(subFolder => renderFolder(subFolder, depth + 1, currentPath))}
                         {folder.notes?.map(note => (
                             <div key={note.id} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer group" style={{ marginLeft: `${(depth + 1) * 12}px` }}>
-                                <span 
+                                <span
                                     onClick={() => onItemClick(note, 'note', currentPath)}
                                     className="flex items-center gap-2 flex-1 text-xs font-mono text-dark-muted hover:text-white transition-colors truncate"
                                 >
@@ -306,11 +306,11 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                         ))}
                         {folder.documents?.map(doc => (
                             <div key={doc.id} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer group" style={{ marginLeft: `${(depth + 1) * 12}px` }}>
-                                <span 
+                                <span
                                     onClick={() => onItemClick(doc, 'document', currentPath)}
                                     className="flex items-center gap-2 flex-1 text-xs font-mono text-dark-muted hover:text-white transition-colors truncate"
                                 >
-                                    <span className="text-[10px]">{doc.fileName.split('.').pop().toUpperCase().slice(0,3)}</span>
+                                    <span className="text-[10px]">{doc.fileName.split('.').pop().toUpperCase().slice(0, 3)}</span>
                                     <span className="truncate">{doc.fileName}</span>
                                 </span>
                                 <button
@@ -385,7 +385,7 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                 {/* Render root-level notes */}
                 {tree.notes?.map(note => (
                     <div key={note.id} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer group">
-                        <span 
+                        <span
                             onClick={() => onItemClick(note, 'note')}
                             className="flex items-center gap-2 flex-1 text-xs font-mono text-dark-muted hover:text-white transition-colors truncate"
                         >
@@ -416,11 +416,11 @@ function FileTree({ tree, onItemClick, onRefresh }) {
                 {/* Render root-level documents */}
                 {tree.documents?.map(doc => (
                     <div key={doc.id} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer group">
-                        <span 
+                        <span
                             onClick={() => onItemClick(doc, 'document')}
                             className="flex items-center gap-2 flex-1 text-xs font-mono text-dark-muted hover:text-white transition-colors truncate"
                         >
-                            <span className="text-[10px]">{doc.fileName.split('.').pop().toUpperCase().slice(0,3)}</span>
+                            <span className="text-[10px]">{doc.fileName.split('.').pop().toUpperCase().slice(0, 3)}</span>
                             <span className="truncate">{doc.fileName}</span>
                         </span>
                         <button
@@ -437,29 +437,35 @@ function FileTree({ tree, onItemClick, onRefresh }) {
             </div>
 
             {showNewFolderModal && (
-                <div className="modal-overlay" onClick={() => setShowNewFolderModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h3>New Folder</h3>
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={() => setShowNewFolderModal(false)}>
+                    <div className="bg-dark-bg border border-dark-border rounded-lg p-6 w-full max-w-md shadow-2xl animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="text-lg font-medium text-white font-mono mb-4">New Folder</h3>
                         <input
                             type="text"
                             value={newItemName}
                             onChange={(e) => setNewItemName(e.target.value)}
                             placeholder="Folder name"
                             autoFocus
+                            className="w-full bg-dark-bg border border-dark-border rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-accent-blue transition-colors mb-4"
                         />
-                        <div className="folder-parent-select">
-                            <label>Create in:</label>
+                        <div className="mb-4">
+                            <label className="block text-xs text-dark-muted font-mono mb-2">Create in:</label>
                             <select
                                 value={selectedFolderId || ''}
                                 onChange={(e) => setSelectedFolderId(e.target.value ? Number(e.target.value) : null)}
+                                className="w-full bg-dark-bg border border-dark-border rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-accent-blue transition-colors"
                             >
-                                <option value="">📁 Root (Top Level)</option>
+                                <option value="">Root (Top Level)</option>
                                 {tree.subFolders?.map(folder => renderFolderSelectOptions(folder))}
                             </select>
                         </div>
-                        <div className="modal-actions">
-                            <button onClick={() => setShowNewFolderModal(false)}>Cancel</button>
-                            <button onClick={handleCreateFolder}>Create</button>
+                        <div className="flex gap-2 justify-end">
+                            <button onClick={() => setShowNewFolderModal(false)} className="px-4 py-2 rounded text-sm font-mono text-dark-muted hover:text-white border border-dark-border hover:border-white transition-colors">
+                                Cancel
+                            </button>
+                            <button onClick={handleCreateFolder} className="px-4 py-2 rounded text-sm font-mono bg-accent-blue text-black hover:bg-accent-blue/80 transition-colors">
+                                Create
+                            </button>
                         </div>
                     </div>
                 </div>
