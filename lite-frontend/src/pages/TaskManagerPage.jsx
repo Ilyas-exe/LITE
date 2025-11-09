@@ -117,37 +117,13 @@ function TaskManagerPage() {
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-12">
                 {/* Page Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4 animate-slide-up">
-                    <div>
-                        <h2 className="text-xl md:text-2xl font-medium text-white mb-1 md:mb-2 font-mono">
-                            Organize Tasks
-                        </h2>
-                        <p className="text-dark-muted font-mono text-xs md:text-sm">
-                            Kanban-style task management
-                        </p>
-                    </div>
-                    <div className="flex gap-2 md:gap-3">
-                        <button
-                            onClick={() => exportTasksToCSV(tasks)}
-                            disabled={tasks.length === 0}
-                            className="text-xs px-3 py-1.5 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono disabled:opacity-30"
-                        >
-                            EXPORT_CSV
-                        </button>
-                        <button
-                            onClick={() => exportTasksToPDF(tasks)}
-                            disabled={tasks.length === 0}
-                            className="text-xs px-3 py-1.5 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono disabled:opacity-30"
-                        >
-                            EXPORT_PDF
-                        </button>
-                        <button
-                            onClick={() => setShowAddModal(true)}
-                            className="btn-primary"
-                        >
-                            ADD_TASK
-                        </button>
-                    </div>
+                <div className="mb-8 animate-slide-up">
+                    <h2 className="text-2xl font-medium text-white mb-2 font-mono">
+                        Organize Tasks
+                    </h2>
+                    <p className="text-dark-muted font-mono text-sm">
+                        Kanban-style task management
+                    </p>
                 </div>
 
                 {loading && (
@@ -191,22 +167,53 @@ function TaskManagerPage() {
                             </div>
                         </div>
 
-                        {/* Stats */}
-                        <div className="font-mono text-sm text-dark-muted">
-                            SHOWING: <span className="text-white font-medium">{filteredTasks.length}</span> / {tasks.length} {tasks.length === 1 ? 'TASK' : 'TASKS'}
+                        {/* Stats & Controls */}
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="font-mono text-sm text-dark-muted">
+                                SHOWING: <span className="text-white font-medium">{filteredTasks.length}</span> / {tasks.length} {tasks.length === 1 ? 'TASK' : 'TASKS'}
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {/* Add Button */}
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="text-xs px-3 py-1.5 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono"
+                                >
+                                    + ADD
+                                </button>
+
+                                {/* Export Buttons */}
+                                <button
+                                    onClick={() => exportTasksToCSV(tasks)}
+                                    disabled={tasks.length === 0}
+                                    className="text-xs px-3 py-1.5 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono disabled:opacity-30"
+                                >
+                                    EXPORT_CSV
+                                </button>
+                                <button
+                                    onClick={() => exportTasksToPDF(tasks)}
+                                    disabled={tasks.length === 0}
+                                    className="text-xs px-3 py-1.5 rounded border border-dark-border text-dark-muted hover:text-accent-blue hover:border-accent-blue transition-colors font-mono disabled:opacity-30"
+                                >
+                                    EXPORT_PDF
+                                </button>
+                            </div>
                         </div>
 
+                        {/* Kanban Board */}
                         <KanbanBoard
-                            tasks={tasks}
+                            tasks={filteredTasks}
                             onTaskUpdate={fetchTasks}
                             onTaskDelete={fetchTasks}
                         />
+                    </div>
+                )}
 
-                        <AddTaskModal
-                            isOpen={showAddModal}
-                            onClose={() => setShowAddModal(false)}
-                            onTaskAdded={fetchTasks}
-                        />
+                {/* Add Task Modal */}
+                {showAddModal && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={() => setShowAddModal(false)}>
+                        <div className="bg-dark-card border border-dark-border rounded-lg p-6 max-w-2xl w-full mx-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                            <AddTaskModal onTaskAdded={() => { fetchTasks(); setShowAddModal(false); }} onCancel={() => setShowAddModal(false)} />
+                        </div>
                     </div>
                 )}
             </main>
