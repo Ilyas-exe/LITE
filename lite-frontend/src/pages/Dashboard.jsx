@@ -2,7 +2,10 @@ import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import GlobalSearch from '../components/GlobalSearch';
+import KeyboardShortcutsModal from '../components/KeyboardShortcutsModal';
+import MobileNav from '../components/MobileNav';
 import { exportFullBackup, importBackup } from '../utils/exportUtils';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 const Dashboard = () => {
     const { user, logout } = useContext(AuthContext);
@@ -10,6 +13,19 @@ const Dashboard = () => {
     const [searchOpen, setSearchOpen] = useState(false);
     const [stats, setStats] = useState({ jobs: 0, tasks: 0, kb: 0 });
     const [showBackupModal, setShowBackupModal] = useState(false);
+    const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+
+    // Keyboard shortcuts
+    useKeyboardShortcuts({
+        onSearch: () => setSearchOpen(true),
+        onBackup: () => setShowBackupModal(true),
+        onShowHelp: () => setShowShortcutsModal(true),
+        onEscape: () => {
+            setSearchOpen(false);
+            setShowBackupModal(false);
+            setShowShortcutsModal(false);
+        }
+    });
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -124,37 +140,44 @@ const Dashboard = () => {
     ];
 
     return (
-        <div className="min-h-screen animate-fade-in">
+        <div className="min-h-screen animate-fade-in pb-20 md:pb-0">
             {/* Header */}
             <header className="border-b border-dark-border bg-dark-bg/80 backdrop-blur-sm sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-accent-blue rounded flex items-center justify-center">
-                            <span className="text-white font-mono text-sm font-bold">L</span>
+                <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <div className="w-7 h-7 md:w-8 md:h-8 bg-accent-blue rounded flex items-center justify-center">
+                            <span className="text-white font-mono text-xs md:text-sm font-bold">L</span>
                         </div>
-                        <h1 className="text-lg font-medium text-white font-mono">LITE</h1>
+                        <h1 className="text-base md:text-lg font-medium text-white font-mono">LITE</h1>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2 md:gap-6">
                         <button
                             onClick={() => setSearchOpen(true)}
-                            className="flex items-center gap-2 text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-4 py-1.5 rounded"
+                            className="hidden md:flex items-center gap-2 text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-4 py-1.5 rounded"
                         >
                             SEARCH
                             <span className="text-xs">⌘K</span>
                         </button>
                         <button
                             onClick={() => setShowBackupModal(true)}
-                            className="text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-green px-4 py-1.5 rounded"
+                            className="hidden md:block text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-green px-4 py-1.5 rounded"
                         >
                             BACKUP
                         </button>
-                        <div className="text-sm text-dark-muted font-mono">
+                        <button
+                            onClick={() => setShowShortcutsModal(true)}
+                            className="text-xs md:text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-2 md:px-3 py-1.5 rounded"
+                            title="Keyboard Shortcuts"
+                        >
+                            ?
+                        </button>
+                        <div className="text-xs md:text-sm text-dark-muted font-mono">
                             <span className="text-dark-text">{user?.username || 'User'}</span>
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-4 py-1.5 rounded"
+                            className="text-xs md:text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-2 md:px-4 py-1.5 rounded"
                         >
                             LOGOUT
                         </button>
@@ -163,7 +186,7 @@ const Dashboard = () => {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-6 py-12">
+            <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-12">
                 {/* Welcome Section */}
                 <div className="mb-12 animate-slide-up">
                     <h2 className="text-3xl font-medium text-white mb-2 font-mono">
@@ -175,27 +198,27 @@ const Dashboard = () => {
                 </div>
 
                 {/* Modules Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
                     {modules.map((module, index) => (
                         <div
                             key={index}
                             onClick={() => navigate(module.path)}
-                            className="card cursor-pointer group"
+                            className="card cursor-pointer group active:scale-95 transition-transform"
                         >
-                            <div className="flex items-start justify-between mb-4">
-                                <h3 className="text-base font-medium text-white font-mono">
+                            <div className="flex items-start justify-between mb-3 md:mb-4">
+                                <h3 className="text-sm md:text-base font-medium text-white font-mono">
                                     {module.title}
                                 </h3>
-                                <span className="text-dark-muted group-hover:text-accent-blue transition-colors font-mono text-sm">
+                                <span className="text-dark-muted group-hover:text-accent-blue transition-colors font-mono text-base md:text-sm">
                                     →
                                 </span>
                             </div>
 
-                            <p className="text-sm text-dark-muted mb-4 font-mono">
+                            <p className="text-xs md:text-sm text-dark-muted mb-3 md:mb-4 font-mono">
                                 {module.description}
                             </p>
 
-                            <div className="text-xs text-dark-muted font-mono border-t border-dark-border pt-3">
+                            <div className="text-xs text-dark-muted font-mono border-t border-dark-border pt-2 md:pt-3">
                                 {module.stats}
                             </div>
                         </div>
@@ -222,6 +245,9 @@ const Dashboard = () => {
 
             {/* Global Search Modal */}
             <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+            {/* Keyboard Shortcuts Modal */}
+            <KeyboardShortcutsModal isOpen={showShortcutsModal} onClose={() => setShowShortcutsModal(false)} />
 
             {/* Backup/Restore Modal */}
             {showBackupModal && (
@@ -254,6 +280,13 @@ const Dashboard = () => {
                     </div>
                 </div>
             )}
+
+            {/* Mobile Navigation */}
+            <MobileNav
+                onShowShortcuts={() => setShowShortcutsModal(true)}
+                onShowSearch={() => setSearchOpen(true)}
+                onShowBackup={() => setShowBackupModal(true)}
+            />
         </div>
     );
 };
