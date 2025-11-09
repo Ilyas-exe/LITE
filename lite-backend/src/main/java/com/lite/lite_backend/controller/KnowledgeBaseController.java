@@ -148,6 +148,19 @@ public class KnowledgeBaseController {
         note.setTitle(noteDTO.getTitle());
         note.setContent(noteDTO.getContent());
 
+        // Update folder association (allow moving between folders)
+        if (noteDTO.getFolderId() != null) {
+            Folder folder = folderRepository.findById(noteDTO.getFolderId())
+                    .orElseThrow(() -> new RuntimeException("Folder not found"));
+            if (!folder.getUser().getId().equals(user.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            note.setFolder(folder);
+        } else {
+            // Allow moving to root (no folder)
+            note.setFolder(null);
+        }
+
         Note savedNote = noteRepository.save(note);
 
         NoteDTO responseDto = new NoteDTO();
