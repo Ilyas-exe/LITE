@@ -26,6 +26,7 @@ public class KnowledgeBaseController {
     private final FolderRepository folderRepository;
     private final NoteRepository noteRepository;
     private final DocumentRepository documentRepository;
+    private final NoteVersionRepository noteVersionRepository;
     private final CloudinaryService cloudinaryService;
 
     // GET /api/kb/tree - Get the entire file/folder tree
@@ -145,6 +146,16 @@ public class KnowledgeBaseController {
 
         if (!note.getUser().getId().equals(user.getId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // Save current version before updating
+        if (note.getContent() != null && !note.getContent().equals(noteDTO.getContent())) {
+            NoteVersion version = new NoteVersion();
+            version.setNote(note);
+            version.setTitle(note.getTitle());
+            version.setContent(note.getContent());
+            version.setVersionNumber(noteVersionRepository.countByNote(note) + 1);
+            noteVersionRepository.save(version);
         }
 
         note.setTitle(noteDTO.getTitle());
@@ -357,20 +368,26 @@ public class KnowledgeBaseController {
         List<Map<String, Object>> matchingNotes = allNotes.stream()
                 .filter(note -> (note.getTitle() != null && note.getTitle().toLowerCase().contains(lowerQuery)) ||
                         (note.getContent() != null && note.getContent().toLowerCase().contains(lowerQuery)))
-                .map(note -> Map.of(
-                        "id", note.getId(),
-                        "title", note.getTitle(),
-                        "type", "note"))
+                .map(note -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", note.getId());
+                    map.put("title", note.getTitle());
+                    map.put("type", "note");
+                    return map;
+                })
                 .collect(Collectors.toList());
 
         // Search documents
         List<Document> allDocuments = documentRepository.findByUser(user);
         List<Map<String, Object>> matchingDocuments = allDocuments.stream()
                 .filter(doc -> doc.getFileName() != null && doc.getFileName().toLowerCase().contains(lowerQuery))
-                .map(doc -> Map.of(
-                        "id", doc.getId(),
-                        "fileName", doc.getFileName(),
-                        "type", "document"))
+                .map(doc -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", doc.getId());
+                    map.put("fileName", doc.getFileName());
+                    map.put("type", "document");
+                    return map;
+                })
                 .collect(Collectors.toList());
 
         Map<String, Object> results = new HashMap<>();
@@ -378,5 +395,77 @@ public class KnowledgeBaseController {
         results.put("documents", matchingDocuments);
 
         return ResponseEntity.ok(results);
+    }
+
+    // GET /api/kb/notes/{id}/versions - Get version history
+    @GetMapping("/notes/{id}/versions")
+    public ResponseEntity<List<Map<String, Object>>> getNoteVersions(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Note note = noteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Note not found"));
+
+        if (!note.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<NoteVersion> versions = noteVersionRepository.findByNoteOrderByVersionNumberDesc(note);
+        List<Map<String, Object>> versionList = versions.stream()
+                .map(v -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", v.getId());
+                    map.put("versionNumber", v.getVersionNumber());
+                    map.put("title", v.getTitle());
+                    map.put("content", v.getContent());
+                    map.put("createdAt", v.getCreatedAt().toString());
+                    return map;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(versionList);
+    }
+
+    // POST /api/kb/notes/{id}/restore/{versionId} - Restore a version
+    @PostMapping("/notes/{id}/restore/{versionId}")
+    public ResponseEntity<NoteDTO> restoreNoteVersion(
+            @PathVariable Long id,
+            @PathVariable Long versionId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User user = (User) userDetails;
+        Note note = noteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Note not found"));
+
+        if (!note.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        NoteVersion version = noteVersionRepository.findById(versionId)
+                .orElseThrow(() -> new RuntimeException("Version not found"));
+
+        if (!version.getNote().getId().equals(note.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // Save current as version before restoring
+        NoteVersion currentVersion = new NoteVersion();
+        currentVersion.setNote(note);
+        currentVersion.setTitle(note.getTitle());
+        currentVersion.setContent(note.getContent());
+        currentVersion.setVersionNumber(noteVersionRepository.countByNote(note) + 1);
+        noteVersionRepository.save(currentVersion);
+
+        // Restore from version
+        note.setTitle(version.getTitle());
+        note.setContent(version.getContent());
+        Note savedNote = noteRepository.save(note);
+
+        NoteDTO responseDto = new NoteDTO();
+        responseDto.setId(savedNote.getId());
+        responseDto.setTitle(savedNote.getTitle());
+        responseDto.setContent(savedNote.getContent());
+        responseDto.setFolderId(savedNote.getFolder() != null ? savedNote.getFolder().getId() : null);
+
+        return ResponseEntity.ok(responseDto);
     }
 }
