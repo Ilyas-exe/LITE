@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import './TaskCard.css';
 
 function TaskCard({ task, onStatusChange, onDelete, onUpdate }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -67,73 +66,77 @@ function TaskCard({ task, onStatusChange, onDelete, onUpdate }) {
 
     if (isEditing) {
         return (
-            <div className="task-card editing">
+            <div className="card">
                 <input
                     type="text"
                     value={editForm.title}
                     onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                     placeholder="Task title"
-                    className="edit-input"
+                    className="input-field mb-3"
                 />
                 <textarea
                     value={editForm.description}
                     onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                    placeholder="Description (optional)"
-                    className="edit-textarea"
+                    placeholder="Description"
+                    className="input-field resize-none mb-3"
                     rows="3"
                 />
                 <input
                     type="date"
                     value={editForm.dueDate}
                     onChange={(e) => setEditForm({ ...editForm, dueDate: e.target.value })}
-                    className="edit-input"
+                    className="input-field mb-3"
                 />
-                <div className="edit-actions">
-                    <button onClick={handleEdit} className="btn-save">✓ Save</button>
-                    <button onClick={() => setIsEditing(false)} className="btn-cancel">✗ Cancel</button>
+                <div className="flex gap-2">
+                    <button onClick={handleEdit} className="flex-1 px-3 py-2 rounded bg-accent-blue hover:bg-accent-blue/80 text-black font-mono text-xs transition-colors">
+                        SAVE
+                    </button>
+                    <button onClick={() => setIsEditing(false)} className="flex-1 px-3 py-2 rounded border border-dark-border text-dark-muted hover:text-white hover:border-white transition-colors font-mono text-xs">
+                        CANCEL
+                    </button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="task-card">
-            <div className="task-header">
-                <h4>{task.title}</h4>
-                <div className="task-actions">
-                    <button onClick={() => setIsEditing(true)} className="btn-icon" title="Edit">
-                        ✏️
+        <div className="card group hover:border-accent-blue/50 transition-all">
+            <div className="flex items-start justify-between mb-3">
+                <h4 className="text-sm font-medium text-white font-mono">{task.title}</h4>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => setIsEditing(true)} className="text-xs px-2 py-1 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono">
+                        EDIT
                     </button>
-                    <button onClick={handleDelete} className="btn-icon" title="Delete">
-                        🗑️
+                    <button onClick={handleDelete} className="text-xs px-2 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500 transition-colors font-mono">
+                        DEL
                     </button>
                 </div>
             </div>
 
             {task.description && (
-                <p className="task-description">{task.description}</p>
+                <p className="text-xs text-dark-muted font-mono mb-3 leading-relaxed">{task.description}</p>
             )}
 
             {task.dueDate && (
-                <p className="task-due-date">
+                <div className="text-xs text-dark-muted font-mono mb-3 flex items-center gap-2">
                     📅 {new Date(task.dueDate).toLocaleDateString()}
-                </p>
+                </div>
             )}
 
-            <div className="status-actions">
+            <div className="flex gap-2 pt-3 border-t border-dark-border">
                 {task.status !== 'TODO' && (
-                    <button onClick={() => handleMoveToStatus('TODO')} className="status-btn todo-btn">
-                        ← To Do
+                    <button onClick={() => handleMoveToStatus('TODO')} className="flex-1 text-xs px-2 py-1.5 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono">
+                        ← TODO
                     </button>
                 )}
                 {task.status !== 'IN_PROGRESS' && (
-                    <button onClick={() => handleMoveToStatus('IN_PROGRESS')} className="status-btn progress-btn">
-                        ⚡ In Progress
+                    <button onClick={() => handleMoveToStatus('IN_PROGRESS')} className="flex-1 text-xs px-2 py-1.5 rounded bg-accent-orange/10 text-accent-orange border border-accent-orange/30 hover:bg-accent-orange/20 hover:border-accent-orange transition-colors font-mono">
+                        PROGRESS
                     </button>
                 )}
                 {task.status !== 'DONE' && (
-                    <button onClick={() => handleMoveToStatus('DONE')} className="status-btn done-btn">
-                        Done ✓
+                    <button onClick={() => handleMoveToStatus('DONE')} className="flex-1 text-xs px-2 py-1.5 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono">
+                        DONE
                     </button>
                 )}
             </div>
