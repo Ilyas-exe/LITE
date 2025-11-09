@@ -13,8 +13,10 @@ public class JobApplicationDTO {
 
     private Long id;
     private String company;
-    private String role;
+    private String wayOfApplying;
+    private String contact;
     private String status;
     private LocalDate dateApplied;
+    private String jobDescription;
     private String cvUrl;
 }
