@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Document, Page, pdfjs } from 'react-pdf';
 import './Viewer.css';
 
@@ -119,7 +121,12 @@ function Viewer({ item, type, onRefresh }) {
                     </div>
                 ) : (
                     <div className="markdown-container">
-                        <ReactMarkdown>{note.content || '*No content yet*'}</ReactMarkdown>
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw]}
+                        >
+                            {note.content || '*No content yet*'}
+                        </ReactMarkdown>
                     </div>
                 )}
             </div>
