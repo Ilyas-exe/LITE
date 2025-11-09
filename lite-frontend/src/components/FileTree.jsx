@@ -161,6 +161,63 @@ function FileTree({ tree, onItemClick, onRefresh }) {
         }
     };
 
+    const handleMoveToFolder = async (destinationFolderId) => {
+        if (!moveItem) return;
+
+        try {
+            let endpoint = '';
+            let body = {};
+
+            if (moveItem.type === 'note') {
+                endpoint = `/api/kb/notes/${moveItem.id}`;
+                // Fetch current note data first
+                const noteResponse = await fetch(`http://localhost:8080${endpoint}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                if (!noteResponse.ok) throw new Error('Failed to fetch note');
+                const noteData = await noteResponse.json();
+                body = {
+                    title: noteData.title,
+                    content: noteData.content,
+                    folderId: destinationFolderId
+                };
+            } else if (moveItem.type === 'document') {
+                // For documents, we need a different approach - update via a move endpoint
+                // Since the current backend doesn't support this, we'll skip document moving for now
+                alert('Moving documents is not yet supported');
+                setShowMoveModal(false);
+                setMoveItem(null);
+                return;
+            }
+
+            const response = await fetch(`http://localhost:8080${endpoint}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (response.ok) {
+                setShowMoveModal(false);
+                setMoveItem(null);
+                await onRefresh();
+                // Expand destination folder
+                if (destinationFolderId) {
+                    const newExpanded = new Set(expandedFolders);
+                    newExpanded.add(destinationFolderId);
+                    setExpandedFolders(newExpanded);
+                }
+            } else {
+                alert('Failed to move item');
+            }
+        } catch (error) {
+            console.error('Error moving item:', error);
+            alert('Error moving item');
+        }
+    };
+
     const renderFolder = (folder, depth = 0) => {
         const isExpanded = expandedFolders.has(folder.id);
         const isActive = activeFolder === folder.id;
