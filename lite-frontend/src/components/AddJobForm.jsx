@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-function AddJobForm({ onJobAdded }) {
+function AddJobForm({ onJobAdded, onCancel }) {
     const [formData, setFormData] = useState({
         company: '',
         role: '',
