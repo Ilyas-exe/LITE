@@ -7,12 +7,14 @@ import Viewer from '../components/Viewer';
 function KnowledgeBasePage() {
     const { user, logout } = useContext(AuthContext);
     const [tree, setTree] = useState({ subFolders: [], notes: [], documents: [] });
+    const [filteredTree, setFilteredTree] = useState({ subFolders: [], notes: [], documents: [] });
     const [selectedItem, setSelectedItem] = useState(null);
     const [selectedType, setSelectedType] = useState(null);
     const [viewMode, setViewMode] = useState('sidebar'); // 'sidebar' or 'grid' - TREE is default
     const [currentFolder, setCurrentFolder] = useState(null); // For grid navigation
     const [folderPath, setFolderPath] = useState([]); // Breadcrumb trail
     const [showViewModal, setShowViewModal] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -29,10 +31,54 @@ function KnowledgeBasePage() {
             if (response.ok) {
                 const data = await response.json();
                 setTree(data);
+                setFilteredTree(data);
             }
         } catch (error) {
             console.error('Error fetching tree:', error);
         }
+    };
+
+    const handleSearch = (query) => {
+        setSearchQuery(query);
+        if (!query.trim()) {
+            setFilteredTree(tree);
+            return;
+        }
+
+        const lowerQuery = query.toLowerCase();
+
+        // Filter notes and documents
+        const filterItems = (items, isDocument = false) => {
+            return items.filter(item => {
+                if (isDocument) {
+                    return item.fileName?.toLowerCase().includes(lowerQuery);
+                }
+                return item.title?.toLowerCase().includes(lowerQuery);
+            });
+        };
+
+        // Recursively filter folders
+        const filterFolders = (folders) => {
+            return folders
+                .map(folder => ({
+                    ...folder,
+                    notes: filterItems(folder.notes || []),
+                    documents: filterItems(folder.documents || [], true),
+                    subFolders: filterFolders(folder.subFolders || [])
+                }))
+                .filter(folder =>
+                    folder.name.toLowerCase().includes(lowerQuery) ||
+                    folder.notes.length > 0 ||
+                    folder.documents.length > 0 ||
+                    folder.subFolders.length > 0
+                );
+        };
+
+        setFilteredTree({
+            notes: filterItems(tree.notes || []),
+            documents: filterItems(tree.documents || [], true),
+            subFolders: filterFolders(tree.subFolders || [])
+        });
     };
 
     const handleItemClick = (item, type, folderPathArg = []) => {
@@ -136,6 +182,28 @@ function KnowledgeBasePage() {
 
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-6 py-6">
+                {/* Search Bar */}
+                <div className="card mb-6">
+                    <div className="flex items-center gap-3">
+                        <span className="text-dark-muted font-mono text-xs font-bold">SEARCH</span>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            placeholder="Search notes, documents, and folders..."
+                            className="flex-1 bg-transparent border-none text-white font-mono text-sm focus:outline-none placeholder:text-dark-muted"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => handleSearch('')}
+                                className="text-dark-muted hover:text-white font-mono text-sm transition-colors"
+                            >
+                                CLEAR
+                            </button>
+                        )}
+                    </div>
+                </div>
+
                 {/* View Mode Toggle */}
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-medium text-white font-mono">Files & Documents</h2>
@@ -170,7 +238,7 @@ function KnowledgeBasePage() {
                                     FILES
                                 </h3>
                                 <FileTree
-                                    tree={tree}
+                                    tree={filteredTree}
                                     onItemClick={handleItemClick}
                                     onRefresh={fetchTree}
                                 />
@@ -233,7 +301,7 @@ function KnowledgeBasePage() {
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {/* Folders */}
-                            {tree.subFolders && tree.subFolders.map(folder => (
+                            {filteredTree.subFolders && filteredTree.subFolders.map(folder => (
                                 <div
                                     key={`folder-${folder.id}`}
                                     className="card hover:border-accent-blue cursor-pointer transition-all group"
@@ -254,7 +322,7 @@ function KnowledgeBasePage() {
                             ))}
 
                             {/* Notes */}
-                            {tree.notes && tree.notes.map(note => (
+                            {filteredTree.notes && filteredTree.notes.map(note => (
                                 <div
                                     key={`note-${note.id}`}
                                     className="card hover:border-accent-blue cursor-pointer transition-all group"
@@ -275,7 +343,7 @@ function KnowledgeBasePage() {
                             ))}
 
                             {/* Documents */}
-                            {tree.documents && tree.documents.map(doc => (
+                            {filteredTree.documents && filteredTree.documents.map(doc => (
                                 <div
                                     key={`doc-${doc.id}`}
                                     className="card hover:border-accent-blue cursor-pointer transition-all group"
