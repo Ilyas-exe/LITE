@@ -5,10 +5,12 @@ function FileTree({ tree, onItemClick, onRefresh }) {
     const [expandedFolders, setExpandedFolders] = useState(new Set());
     const [showNewFolderModal, setShowNewFolderModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [showMoveModal, setShowMoveModal] = useState(false);
     const [newItemName, setNewItemName] = useState('');
     const [selectedFolderId, setSelectedFolderId] = useState(null);
     const [uploadFile, setUploadFile] = useState(null);
     const [activeFolder, setActiveFolder] = useState(null); // Track currently selected folder for creating items
+    const [moveItem, setMoveItem] = useState(null); // Item being moved: {id, type}
 
     const toggleFolder = (folderId) => {
         const newExpanded = new Set(expandedFolders);
