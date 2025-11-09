@@ -152,9 +152,25 @@ function AddJobForm({ onJobAdded, onCancel }) {
                     </div>
                 </div>
 
-                <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
-                    {loading ? 'ADDING...' : 'ADD APPLICATION'}
-                </button>
+                <div className="flex gap-3 mt-6">
+                    {onCancel && (
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            className="flex-1 px-4 py-2.5 rounded border border-dark-border text-dark-muted hover:text-white hover:border-white transition-colors font-mono text-sm"
+                            disabled={loading}
+                        >
+                            CANCEL
+                        </button>
+                    )}
+                    <button
+                        type="submit"
+                        className="flex-1 px-4 py-2.5 rounded bg-accent-blue hover:bg-accent-blue/80 text-black font-mono text-sm font-medium transition-colors"
+                        disabled={loading}
+                    >
+                        {loading ? 'ADDING...' : 'ADD APPLICATION'}
+                    </button>
+                </div>
             </form>
         </div>
     );
