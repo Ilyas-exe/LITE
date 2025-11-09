@@ -59,10 +59,17 @@ function AddJobForm({ onJobAdded, onCancel }) {
     };
 
     return (
-        <div className="card">
+        <div>
             <div className="flex items-center justify-between mb-6">
-                <h3 className="text-base font-medium text-white font-mono">ADD_APPLICATION</h3>
-                <div className="text-xs text-dark-muted font-mono">NEW</div>
+                <h3 className="text-lg font-medium text-white font-mono">ADD_APPLICATION</h3>
+                {onCancel && (
+                    <button
+                        onClick={onCancel}
+                        className="text-dark-muted hover:text-white transition-colors text-xl"
+                    >
+                        ×
+                    </button>
+                )}
             </div>
 
             {error && (
