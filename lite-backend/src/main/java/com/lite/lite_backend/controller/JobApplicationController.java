@@ -125,4 +125,17 @@ public class JobApplicationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    /**
+     * GET /api/jobs/search?q={query} - Search job applications
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<JobApplicationDTO>> searchJobApplications(@RequestParam String q) {
+        try {
+            List<JobApplicationDTO> results = jobApplicationService.searchJobApplications(q);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
