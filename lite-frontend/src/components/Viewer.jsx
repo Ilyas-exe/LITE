@@ -15,6 +15,8 @@ function Viewer({ item, type, onRefresh }) {
     const [editContent, setEditContent] = useState('');
     const [editTitle, setEditTitle] = useState('');
     const [numPages, setNumPages] = useState(null);
+    const [showMoveModal, setShowMoveModal] = useState(false);
+    const [folders, setFolders] = useState([]);
 
     useEffect(() => {
         if (type === 'note' && item) {
@@ -23,6 +25,39 @@ function Viewer({ item, type, onRefresh }) {
             setNote(null);
         }
     }, [item, type]);
+
+    useEffect(() => {
+        if (showMoveModal) {
+            fetchFolders();
+        }
+    }, [showMoveModal]);
+
+    const fetchFolders = async () => {
+        try {
+            const response = await fetch('http://localhost:8080/api/kb', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setFolders(buildFolderList(data.subFolders));
+            }
+        } catch (error) {
+            console.error('Error fetching folders:', error);
+        }
+    };
+
+    const buildFolderList = (folders, depth = 0) => {
+        let result = [];
+        for (let folder of folders) {
+            result.push({ ...folder, depth });
+            if (folder.subFolders && folder.subFolders.length > 0) {
+                result = result.concat(buildFolderList(folder.subFolders, depth + 1));
+            }
+        }
+        return result;
+    };
 
     const fetchNote = async (noteId) => {
         try {
@@ -185,6 +220,53 @@ function Viewer({ item, type, onRefresh }) {
         );
     }
 
+    const handleDeleteDocument = async () => {
+        if (!item || type !== 'document') return;
+
+        if (!window.confirm(`Are you sure you want to delete "${item.fileName}"?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/kb/documents/${item.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (response.ok) {
+                onRefresh();
+            }
+        } catch (error) {
+            console.error('Error deleting document:', error);
+        }
+    };
+
+    const handleMoveDocument = async (destinationFolderId) => {
+        if (!item || type !== 'document') return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/kb/documents/${item.id}/move`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    newFolderId: destinationFolderId
+                })
+            });
+
+            if (response.ok) {
+                setShowMoveModal(false);
+                onRefresh();
+            }
+        } catch (error) {
+            console.error('Error moving document:', error);
+        }
+    };
+
     if (type === 'document' && item) {
         return (
             <div className="viewer-container">
@@ -201,9 +283,17 @@ function Viewer({ item, type, onRefresh }) {
                 )}
                 <div className="viewer-header">
                     <h2>📄 {item.fileName}</h2>
-                    <a href={item.documentUrl} target="_blank" rel="noopener noreferrer" className="btn-open-external">
-                        Open in New Tab
-                    </a>
+                    <div className="viewer-actions">
+                        <a href={item.documentUrl} target="_blank" rel="noopener noreferrer" className="btn-open-external">
+                            Open in New Tab
+                        </a>
+                        <button onClick={() => setShowMoveModal(true)} className="btn-move">
+                            Move
+                        </button>
+                        <button onClick={handleDeleteDocument} className="btn-delete">
+                            Delete
+                        </button>
+                    </div>
                 </div>
 
                 <div className="pdf-container">
@@ -231,6 +321,36 @@ function Viewer({ item, type, onRefresh }) {
                         </div>
                     )}
                 </div>
+
+                {showMoveModal && (
+                    <div className="modal-overlay" onClick={() => setShowMoveModal(false)}>
+                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                            <h3>Move Document</h3>
+                            <p>Select destination folder for <strong>{item.fileName}</strong>:</p>
+                            <div className="folder-list">
+                                <div
+                                    className="folder-item"
+                                    onClick={() => handleMoveDocument(null)}
+                                >
+                                    📁 Root
+                                </div>
+                                {folders.map(folder => (
+                                    <div
+                                        key={folder.id}
+                                        className="folder-item"
+                                        style={{ paddingLeft: `${folder.depth * 20 + 10}px` }}
+                                        onClick={() => handleMoveDocument(folder.id)}
+                                    >
+                                        📁 {folder.name}
+                                    </div>
+                                ))}
+                            </div>
+                            <button onClick={() => setShowMoveModal(false)} className="btn-cancel">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
