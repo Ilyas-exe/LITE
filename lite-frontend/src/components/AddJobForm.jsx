@@ -3,9 +3,11 @@ import { useState } from 'react';
 function AddJobForm({ onJobAdded, onCancel }) {
     const [formData, setFormData] = useState({
         company: '',
-        role: '',
-        status: 'Applied',
-        dateApplied: new Date().toISOString().split('T')[0]
+        wayOfApplying: '',
+        contact: '',
+        status: 'Submitted',
+        dateApplied: new Date().toISOString().split('T')[0],
+        jobDescription: ''
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -15,8 +17,8 @@ function AddJobForm({ onJobAdded, onCancel }) {
         setLoading(true);
         setError('');
 
-        if (!formData.company.trim() || !formData.role.trim()) {
-            setError('Company and Role are required');
+        if (!formData.company.trim()) {
+            setError('Company is required');
             setLoading(false);
             return;
         }
@@ -37,9 +39,11 @@ function AddJobForm({ onJobAdded, onCancel }) {
 
             setFormData({
                 company: '',
-                role: '',
-                status: 'Applied',
-                dateApplied: new Date().toISOString().split('T')[0]
+                wayOfApplying: '',
+                contact: '',
+                status: 'Submitted',
+                dateApplied: new Date().toISOString().split('T')[0],
+                jobDescription: ''
             });
 
             onJobAdded();
@@ -98,21 +102,36 @@ function AddJobForm({ onJobAdded, onCancel }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="role" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
-                            Role *
+                        <label htmlFor="wayOfApplying" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                            Way of Applying
                         </label>
                         <input
                             type="text"
-                            id="role"
-                            name="role"
-                            value={formData.role}
+                            id="wayOfApplying"
+                            name="wayOfApplying"
+                            value={formData.wayOfApplying}
                             onChange={handleChange}
-                            placeholder="Software Engineer"
-                            required
+                            placeholder="indeed, gmail, linkedin..."
                             disabled={loading}
                             className="input-field"
                         />
                     </div>
+                </div>
+
+                <div className="space-y-2">
+                    <label htmlFor="contact" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                        Contact
+                    </label>
+                    <input
+                        type="text"
+                        id="contact"
+                        name="contact"
+                        value={formData.contact}
+                        onChange={handleChange}
+                        placeholder="recruiter@company.com or LinkedIn profile"
+                        disabled={loading}
+                        className="input-field"
+                    />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -128,10 +147,10 @@ function AddJobForm({ onJobAdded, onCancel }) {
                             disabled={loading}
                             className="input-field"
                         >
-                            <option value="Applied">Applied</option>
-                            <option value="Interview">Interview</option>
-                            <option value="Offer">Offer</option>
+                            <option value="Submitted">Submitted</option>
+                            <option value="In Progress">In Progress</option>
                             <option value="Rejected">Rejected</option>
+                            <option value="Awaiting Response">Awaiting Response</option>
                         </select>
                     </div>
 
@@ -150,6 +169,22 @@ function AddJobForm({ onJobAdded, onCancel }) {
                             className="input-field"
                         />
                     </div>
+                </div>
+
+                <div className="space-y-2">
+                    <label htmlFor="jobDescription" className="block text-xs uppercase tracking-wider text-dark-muted font-medium">
+                        Job Description
+                    </label>
+                    <textarea
+                        id="jobDescription"
+                        name="jobDescription"
+                        value={formData.jobDescription}
+                        onChange={handleChange}
+                        placeholder="Brief job description or notes..."
+                        rows="3"
+                        disabled={loading}
+                        className="input-field resize-none"
+                    />
                 </div>
 
                 <div className="flex gap-3 mt-6">
