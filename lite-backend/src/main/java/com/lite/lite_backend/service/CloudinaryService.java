@@ -55,9 +55,8 @@ public class CloudinaryService {
             folder = "lite-app/cvs";
         }
 
-        // Clean the filename - remove extension for public_id
-        String cleanFilename = originalFilename.substring(0, originalFilename.lastIndexOf('.'))
-                .replaceAll("[^a-zA-Z0-9._-]", "_");
+        // Clean the filename - keep extension for public_id
+        String cleanFilename = originalFilename.replaceAll("[^a-zA-Z0-9._-]", "_");
 
         // Upload to Cloudinary with proper configuration
         Map<String, Object> uploadResult = cloudinary.uploader().upload(
