@@ -66,8 +66,10 @@ function JobTrackerPage() {
         const lowerQuery = query.toLowerCase();
         const filtered = jobs.filter(job =>
             job.company?.toLowerCase().includes(lowerQuery) ||
-            job.role?.toLowerCase().includes(lowerQuery) ||
-            job.status?.toLowerCase().includes(lowerQuery)
+            job.wayOfApplying?.toLowerCase().includes(lowerQuery) ||
+            job.contact?.toLowerCase().includes(lowerQuery) ||
+            job.status?.toLowerCase().includes(lowerQuery) ||
+            job.jobDescription?.toLowerCase().includes(lowerQuery)
         );
         setFilteredJobs(filtered);
     };
@@ -150,7 +152,7 @@ function JobTrackerPage() {
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => handleSearch(e.target.value)}
-                                    placeholder="Search by company, role, or status..."
+                                    placeholder="Search applications..."
                                     className="flex-1 bg-transparent border-none text-white font-mono text-sm focus:outline-none placeholder:text-dark-muted"
                                 />
                                 {searchQuery && (
