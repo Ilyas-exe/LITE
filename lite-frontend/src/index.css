@@ -4,17 +4,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Lawtor-inspired Minimalist Dark Theme */
+/* Theme Variables */
+:root[data-theme='dark'] {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #141414;
+  --border-color: #1f1f1f;
+  --text-primary: #e5e5e5;
+  --text-muted: #737373;
+  --grid-opacity: 0.05;
+}
+
+:root[data-theme='light'] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --border-color: #e5e7eb;
+  --text-primary: #111827;
+  --text-muted: #6b7280;
+  --grid-opacity: 0.02;
+}
+
+/* Lawtor-inspired Minimalist Theme */
 @layer base {
   * {
     @apply m-0 p-0 box-border;
   }
 
   body {
-    @apply bg-dark-bg text-dark-text font-mono antialiased min-h-screen;
+    @apply font-mono antialiased min-h-screen;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     background-image: 
-      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+      radial-gradient(circle at 1px 1px, rgba(0, 0, 0, var(--grid-opacity)) 1px, transparent 0);
     background-size: 40px 40px;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   #root {
@@ -29,17 +51,17 @@
 @layer components {
   /* Card Component - Lawtor Style (No animations) */
   .card {
-    background: #141414;
-    border: 1px solid #1f1f1f;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     padding: 1.5rem;
-    transition: border-color 0.15s ease;
+    transition: border-color 0.15s ease, background 0.3s ease;
     box-shadow: none;
     transform: none;
   }
 
   .card:hover {
-    border-color: #292929;
+    border-color: rgba(var(--border-color), 0.8);
     box-shadow: none;
     transform: none;
   }
@@ -107,5 +129,56 @@
   .badge-info {
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md;
     @apply bg-accent-blue/10 text-accent-blue text-xs font-medium;
+  }
+}
+
+/* Theme-aware utility overrides */
+@layer utilities {
+  /* Background colors that adapt to theme */
+  [data-theme='light'] .bg-dark-bg {
+    background-color: #ffffff !important;
+  }
+
+  [data-theme='light'] .bg-dark-card {
+    background-color: #f9fafb !important;
+  }
+
+  /* Border colors */
+  [data-theme='light'] .border-dark-border {
+    border-color: #e5e7eb !important;
+  }
+
+  /* Text colors */
+  [data-theme='light'] .text-dark-text {
+    color: #111827 !important;
+  }
+
+  [data-theme='light'] .text-dark-muted {
+    color: #6b7280 !important;
+  }
+
+  [data-theme='light'] .text-white {
+    color: #111827 !important;
+  }
+
+  /* Hover states for light theme */
+  [data-theme='light'] .hover\:text-white:hover {
+    color: #111827 !important;
+  }
+
+  /* Input fields */
+  [data-theme='light'] .input-field {
+    background-color: #ffffff !important;
+    border-color: #e5e7eb !important;
+    color: #111827 !important;
+  }
+
+  [data-theme='light'] .input-field::placeholder {
+    color: #6b7280 !important;
+  }
+
+  /* Transparent backgrounds */
+  [data-theme='light'] .bg-dark-bg\/80 {
+    background-color: rgba(255, 255, 255, 0.8) !important;
   }
 }
