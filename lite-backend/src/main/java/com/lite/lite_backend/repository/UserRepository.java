@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    
+
     /**
      * Find a user by their email address.
      * This will be used for authentication and user lookup.
