@@ -163,8 +163,10 @@ public class JobApplicationService {
         String lowerQuery = query.toLowerCase();
         return allJobs.stream()
                 .filter(job -> (job.getCompany() != null && job.getCompany().toLowerCase().contains(lowerQuery)) ||
-                        (job.getRole() != null && job.getRole().toLowerCase().contains(lowerQuery)) ||
-                        (job.getStatus() != null && job.getStatus().toLowerCase().contains(lowerQuery)))
+                        (job.getWayOfApplying() != null && job.getWayOfApplying().toLowerCase().contains(lowerQuery)) ||
+                        (job.getContact() != null && job.getContact().toLowerCase().contains(lowerQuery)) ||
+                        (job.getStatus() != null && job.getStatus().toLowerCase().contains(lowerQuery)) ||
+                        (job.getJobDescription() != null && job.getJobDescription().toLowerCase().contains(lowerQuery)))
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
