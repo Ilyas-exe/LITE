@@ -9,10 +9,12 @@ function JobTable({ jobs, onRefresh }) {
     const handleEdit = (job) => {
         setEditingId(job.id);
         setEditForm({
-            company: job.company,
-            role: job.role,
-            status: job.status,
-            dateApplied: job.dateApplied
+            company: job.company || '',
+            wayOfApplying: job.wayOfApplying || '',
+            contact: job.contact || '',
+            status: job.status || 'Submitted',
+            dateApplied: job.dateApplied || '',
+            jobDescription: job.jobDescription || ''
         });
     };
 
@@ -130,12 +132,12 @@ function JobTable({ jobs, onRefresh }) {
 
     const getStatusBadge = (status) => {
         const styles = {
-            Applied: 'badge-info',
-            Interview: 'badge-warning',
-            Offer: 'badge-success',
-            Rejected: 'bg-red-500/10 text-red-400 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium'
+            Submitted: 'bg-blue-500/10 text-blue-400 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-blue-500/30',
+            'In Progress': 'bg-yellow-500/10 text-yellow-400 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-yellow-500/30',
+            Rejected: 'bg-red-500/10 text-red-400 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-red-500/30',
+            'Awaiting Response': 'bg-purple-500/10 text-purple-400 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-purple-500/30'
         };
-        return styles[status] || 'badge-info';
+        return styles[status] || styles.Submitted;
     };
 
     if (jobs.length === 0) {
@@ -154,43 +156,79 @@ function JobTable({ jobs, onRefresh }) {
                 <table className="w-full">
                     <thead>
                         <tr className="border-b border-dark-border">
-                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Company</th>
-                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Role</th>
-                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Status</th>
-                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Date</th>
-                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">CV</th>
-                            <th className="text-right py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase">Actions</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase whitespace-nowrap">Company</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase whitespace-nowrap">Way of Applying</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase whitespace-nowrap">Contact</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase whitespace-nowrap">Status</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase whitespace-nowrap">Date</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase whitespace-nowrap">Job Description</th>
+                            <th className="text-left py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase whitespace-nowrap">CV</th>
+                            <th className="text-right py-3 px-4 text-xs font-medium text-dark-muted font-mono uppercase whitespace-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {jobs.map((job) => (
                             <tr key={job.id} className="border-b border-dark-border hover:bg-white/5 transition-colors">
+                                {/* Company */}
                                 <td className="py-3 px-4">
                                     {editingId === job.id ? (
                                         <input
                                             type="text"
                                             value={editForm.company}
                                             onChange={(e) => setEditForm({ ...editForm, company: e.target.value })}
-                                            className="w-full px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-white font-mono focus:outline-none"
+                                            className="w-full min-w-[120px] px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-white font-mono focus:outline-none"
+                                            placeholder="Company name"
                                         />
                                     ) : (
                                         <span className="text-sm text-white font-mono font-medium">{job.company}</span>
                                     )}
                                 </td>
-                                
+
+                                {/* Way of Applying */}
                                 <td className="py-3 px-4">
                                     {editingId === job.id ? (
                                         <input
                                             type="text"
-                                            value={editForm.role}
-                                            onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                                            className="w-full px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-dark-muted font-mono focus:outline-none"
+                                            value={editForm.wayOfApplying}
+                                            onChange={(e) => setEditForm({ ...editForm, wayOfApplying: e.target.value })}
+                                            className="w-full min-w-[100px] px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-dark-muted font-mono focus:outline-none"
+                                            placeholder="indeed, gmail..."
                                         />
                                     ) : (
-                                        <span className="text-sm text-dark-muted font-mono">{job.role}</span>
+                                        <span className="text-sm text-dark-muted font-mono">{job.wayOfApplying || '-'}</span>
                                     )}
                                 </td>
-                                
+
+                                {/* Contact */}
+                                <td className="py-3 px-4">
+                                    {editingId === job.id ? (
+                                        <input
+                                            type="text"
+                                            value={editForm.contact}
+                                            onChange={(e) => setEditForm({ ...editForm, contact: e.target.value })}
+                                            className="w-full min-w-[150px] px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-dark-muted font-mono focus:outline-none"
+                                            placeholder="email or link"
+                                        />
+                                    ) : (
+                                        job.contact ? (
+                                            job.contact.includes('@') ? (
+                                                <a href={`mailto:${job.contact}`} className="text-sm text-accent-blue hover:underline font-mono">
+                                                    {job.contact}
+                                                </a>
+                                            ) : job.contact.startsWith('http') ? (
+                                                <a href={job.contact} target="_blank" rel="noopener noreferrer" className="text-sm text-accent-blue hover:underline font-mono">
+                                                    Link
+                                                </a>
+                                            ) : (
+                                                <span className="text-sm text-dark-muted font-mono">{job.contact}</span>
+                                            )
+                                        ) : (
+                                            <span className="text-sm text-dark-muted font-mono">-</span>
+                                        )
+                                    )}
+                                </td>
+
+                                {/* Status */}
                                 <td className="py-3 px-4 relative">
                                     {changingStatusId === job.id ? (
                                         <select
@@ -198,23 +236,24 @@ function JobTable({ jobs, onRefresh }) {
                                             onChange={(e) => handleStatusChange(job.id, e.target.value)}
                                             onBlur={() => setChangingStatusId(null)}
                                             autoFocus
-                                            className="px-2 py-1 bg-dark-bg border border-accent-blue rounded text-xs text-white font-mono focus:outline-none cursor-pointer"
+                                            className="px-2 py-1 bg-dark-bg border border-accent-blue rounded text-xs text-white font-mono focus:outline-none cursor-pointer min-w-[140px]"
                                         >
-                                            <option value="Applied">Applied</option>
-                                            <option value="Interview">Interview</option>
-                                            <option value="Offer">Offer</option>
+                                            <option value="Submitted">Submitted</option>
+                                            <option value="In Progress">In Progress</option>
                                             <option value="Rejected">Rejected</option>
+                                            <option value="Awaiting Response">Awaiting Response</option>
                                         </select>
                                     ) : (
                                         <button
                                             onClick={() => setChangingStatusId(job.id)}
-                                            className={`${getStatusBadge(job.status)} cursor-pointer hover:opacity-80 transition-opacity`}
+                                            className={`${getStatusBadge(job.status)} cursor-pointer hover:opacity-80 transition-opacity whitespace-nowrap`}
                                         >
-                                            {job.status.toUpperCase()}
+                                            {job.status}
                                         </button>
                                     )}
                                 </td>
-                                
+
+                                {/* Date */}
                                 <td className="py-3 px-4">
                                     {editingId === job.id ? (
                                         <input
@@ -224,40 +263,59 @@ function JobTable({ jobs, onRefresh }) {
                                             className="px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-dark-muted font-mono focus:outline-none"
                                         />
                                     ) : (
-                                        <span className="text-sm text-dark-muted font-mono">
+                                        <span className="text-sm text-dark-muted font-mono whitespace-nowrap">
                                             {new Date(job.dateApplied).toLocaleDateString()}
                                         </span>
                                     )}
                                 </td>
-                                
+
+                                {/* Job Description */}
+                                <td className="py-3 px-4">
+                                    {editingId === job.id ? (
+                                        <textarea
+                                            value={editForm.jobDescription}
+                                            onChange={(e) => setEditForm({ ...editForm, jobDescription: e.target.value })}
+                                            className="w-full min-w-[200px] px-2 py-1 bg-dark-bg border border-accent-blue rounded text-sm text-dark-muted font-mono focus:outline-none resize-none"
+                                            rows="2"
+                                            placeholder="Job description..."
+                                        />
+                                    ) : (
+                                        <div className="text-sm text-dark-muted font-mono max-w-[200px] truncate" title={job.jobDescription}>
+                                            {job.jobDescription || '-'}
+                                        </div>
+                                    )}
+                                </td>
+
+                                {/* CV */}
                                 <td className="py-3 px-4">
                                     {job.cvUrl ? (
                                         <a
                                             href={job.cvUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-xs text-accent-blue hover:underline font-mono"
+                                            className="text-xs px-2 py-1 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono inline-block"
                                         >
                                             VIEW
                                         </a>
                                     ) : (
-                                        <span className="text-xs text-dark-muted font-mono"></span>
+                                        <span className="text-xs text-dark-muted font-mono">-</span>
                                     )}
                                 </td>
-                                
+
+                                {/* Actions */}
                                 <td className="py-3 px-4">
                                     <div className="flex items-center justify-end gap-2">
                                         {editingId === job.id ? (
                                             <>
                                                 <button
                                                     onClick={() => handleSaveEdit(job.id)}
-                                                    className="text-xs px-2.5 py-1.5 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono"
+                                                    className="text-xs px-2.5 py-1.5 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono whitespace-nowrap"
                                                 >
                                                     SAVE
                                                 </button>
                                                 <button
                                                     onClick={handleCancelEdit}
-                                                    className="text-xs px-2.5 py-1.5 rounded border border-dark-border text-dark-muted hover:text-white hover:border-white transition-colors font-mono"
+                                                    className="text-xs px-2.5 py-1.5 rounded border border-dark-border text-dark-muted hover:text-white hover:border-white transition-colors font-mono whitespace-nowrap"
                                                 >
                                                     CANCEL
                                                 </button>
@@ -267,20 +325,20 @@ function JobTable({ jobs, onRefresh }) {
                                                 <button
                                                     onClick={() => handleFileSelect(job.id)}
                                                     disabled={uploadingId === job.id}
-                                                    className="text-xs px-2.5 py-1.5 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono disabled:opacity-50"
+                                                    className="text-xs px-2.5 py-1.5 rounded bg-accent-green/10 text-accent-green border border-accent-green/30 hover:bg-accent-green/20 hover:border-accent-green transition-colors font-mono disabled:opacity-50 whitespace-nowrap"
                                                     title="Upload CV"
                                                 >
                                                     {uploadingId === job.id ? '...' : 'CV'}
                                                 </button>
                                                 <button
                                                     onClick={() => handleEdit(job)}
-                                                    className="text-xs px-2.5 py-1.5 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono"
+                                                    className="text-xs px-2.5 py-1.5 rounded bg-accent-blue/10 text-accent-blue border border-accent-blue/30 hover:bg-accent-blue/20 hover:border-accent-blue transition-colors font-mono whitespace-nowrap"
                                                 >
                                                     EDIT
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(job.id)}
-                                                    className="text-xs px-2.5 py-1.5 rounded bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500 transition-colors font-mono"
+                                                    className="text-xs px-2.5 py-1.5 rounded bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500 transition-colors font-mono whitespace-nowrap"
                                                 >
                                                     DEL
                                                 </button>
