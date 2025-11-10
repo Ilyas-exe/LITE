@@ -14,6 +14,13 @@ export default {
           text: '#e5e5e5',
           muted: '#737373',
         },
+        light: {
+          bg: '#ffffff',
+          card: '#f9fafb',
+          border: '#e5e7eb',
+          text: '#111827',
+          muted: '#6b7280',
+        },
         accent: {
           blue: '#3b82f6',
           green: '#22c55e',
