@@ -75,13 +75,6 @@ public class CloudinaryService {
         // Return the secure URL of the uploaded file
         String secureUrl = (String) uploadResult.get("secure_url");
 
-        // For CVs and documents, modify URL to force inline display instead of download
-        if (secureUrl.contains("/raw/upload/")) {
-            // Insert fl_attachment transformation to prevent download
-            // This tells browser to display inline instead of forcing download
-            secureUrl = secureUrl.replace("/raw/upload/", "/raw/upload/fl_attachment/");
-        }
-
         // Log for debugging
         System.out.println("File uploaded successfully to Cloudinary: " + secureUrl);
 
