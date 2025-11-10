@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import GlobalSearch from '../components/GlobalSearch';
 import KeyboardShortcutsModal from '../components/KeyboardShortcutsModal';
 import MobileNav from '../components/MobileNav';
+import ThemeToggle from '../components/ThemeToggle';
 import { exportFullBackup, importBackup } from '../utils/exportUtils';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
@@ -175,6 +176,14 @@ const Dashboard = () => {
                         <div className="text-xs md:text-sm text-dark-muted font-mono">
                             <span className="text-dark-text">{user?.username || 'User'}</span>
                         </div>
+                        <ThemeToggle />
+                        <button
+                            onClick={() => navigate('/settings')}
+                            className="text-xs md:text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-2 md:px-3 py-1.5 rounded"
+                            title="Settings"
+                        >
+                            ⚙
+                        </button>
                         <button
                             onClick={handleLogout}
                             className="text-xs md:text-sm text-dark-muted hover:text-white font-mono transition-colors border border-dark-border hover:border-accent-blue px-2 md:px-4 py-1.5 rounded"
